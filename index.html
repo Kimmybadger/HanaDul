@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>하나둘 · Hana Dul</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f0e0c; --surface:#1a1814; --card:#221f1a; --border:rgba(255,255,255,0.07);
+    --accent:#e8a040; --accent2:#c85a2a; --text:#f0ebe0; --muted:#7a7060;
+    --soft:#3a3528; --hanja:#d4883a; --correct:#4a9a6a; --wrong:#c84040;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse 80% 50% at 20% 10%,rgba(232,160,64,0.06) 0%,transparent 60%),
+               radial-gradient(ellipse 60% 40% at 80% 90%,rgba(200,90,42,0.05) 0%,transparent 60%)}
+
+  /* HEADER */
+  header{position:sticky;top:0;z-index:200;background:rgba(15,14,12,0.95);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+  .logo{display:flex;flex-direction:column;gap:1px}
+  .logo-kr{font-family:'Noto Serif KR',serif;font-size:1.2rem;font-weight:900;color:var(--accent);letter-spacing:0.05em;line-height:1}
+  .logo-en{font-size:0.62rem;color:var(--muted);font-weight:300;letter-spacing:0.2em;text-transform:uppercase}
+  .streak-badge{display:flex;align-items:center;gap:5px;background:rgba(232,160,64,0.12);border:1px solid rgba(232,160,64,0.2);border-radius:20px;padding:5px 11px;font-size:0.75rem;color:var(--accent);font-weight:700}
+
+  /* NAV */
+  .nav-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:57px;z-index:190;overflow-x:auto;scrollbar-width:none}
+  .nav-tabs::-webkit-scrollbar{display:none}
+  .nav-tab{flex:1;min-width:80px;padding:12px 8px;text-align:center;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none}
+  .nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+  /* BASE PAGES */
+  .page{display:none;padding:20px 16px 80px;max-width:500px;margin:0 auto;position:relative;z-index:1}
+  .page.active{display:block}
+
+  /* PROGRESS */
+  .progress-section{margin-bottom:20px}
+  .progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .progress-title{font-size:0.72rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;font-weight:700}
+  .progress-count{font-size:0.72rem;color:var(--accent);font-weight:700}
+  .progress-bar{height:3px;background:var(--soft);border-radius:99px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:99px;transition:width 0.5s cubic-bezier(0.4,0,0.2,1)}
+
+  /* WORD CARD */
+  .word-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:28px 24px 24px;margin-bottom:16px;position:relative;overflow:visible;animation:cardIn 0.35s cubic-bezier(0.4,0,0.2,1)}
+  @keyframes cardIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .card-glow{position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(232,160,64,0.08) 0%,transparent 70%);pointer-events:none}
+  .card-category{display:inline-block;font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent2);background:rgba(200,90,42,0.12);border:1px solid rgba(200,90,42,0.2);border-radius:4px;padding:3px 8px;margin-bottom:16px}
+  .card-main{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
+  .korean-word{font-family:'Noto Serif KR',serif;font-size:3.2rem;font-weight:900;color:var(--text);line-height:1;letter-spacing:-0.02em}
+  .tts-btn{width:46px;height:46px;border-radius:50%;border:1px solid rgba(232,160,64,0.25);background:rgba(232,160,64,0.08);color:var(--accent);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all 0.15s;flex-shrink:0}
+  .tts-btn:active{transform:scale(0.92);background:rgba(232,160,64,0.18)}
+  .romanization{font-size:0.9rem;color:var(--muted);font-style:italic;margin-bottom:4px;font-family:'Playfair Display',serif}
+  .english-meaning{font-size:1.5rem;font-weight:700;color:var(--accent);font-family:'Playfair Display',serif;margin-bottom:20px}
+
+  /* HANJA */
+  .hanja-section{background:rgba(212,136,58,0.06);border:1px solid rgba(212,136,58,0.12);border-radius:14px;padding:14px 16px;margin-bottom:18px}
+  .hanja-label{font-size:0.62rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--hanja);margin-bottom:10px;opacity:0.7}
+  .hanja-chars{display:flex;gap:10px;flex-wrap:wrap}
+  .hanja-char{display:flex;flex-direction:column;align-items:center;background:rgba(212,136,58,0.08);border:1px solid rgba(212,136,58,0.15);border-radius:10px;padding:10px 14px;gap:3px;flex:1;min-width:80px;cursor:pointer;transition:background 0.15s,border-color 0.15s}
+  .hanja-char:active{background:rgba(212,136,58,0.22);border-color:rgba(212,136,58,0.5)}
+  .hanja-glyph{font-size:1.8rem;color:var(--hanja);line-height:1;font-family:'Noto Serif KR',serif}
+  .hanja-kr{font-family:'Noto Serif KR',serif;font-size:0.78rem;color:var(--text);font-weight:700}
+  .hanja-en{font-size:0.68rem;color:var(--muted);text-align:center;line-height:1.3}
+  .hanja-tap{font-size:0.58rem;color:var(--hanja);margin-top:4px;opacity:0.6}
+
+  /* EXAMPLES */
+  .examples-label{font-size:0.62rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .example-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:border-color 0.15s}
+  .example-item:active{border-color:rgba(232,160,64,0.3)}
+  .example-kr{font-family:'Noto Serif KR',serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:3px;display:flex;align-items:center;justify-content:space-between}
+  .example-tts{font-size:0.8rem;color:var(--muted);opacity:0.6}
+  .example-en{font-size:0.82rem;color:var(--muted);font-style:italic}
+
+  /* RELATED */
+  .related-section{margin-top:16px}
+  .related-label{font-size:0.62rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .related-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .related-chip{background:var(--soft);border:1px solid var(--border);border-radius:20px;padding:6px 14px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:5px}
+  .related-chip:active{background:rgba(232,160,64,0.15);border-color:rgba(232,160,64,0.3)}
+  .chip-kr{font-family:'Noto Serif KR',serif;font-size:0.85rem;font-weight:700;color:var(--text)}
+  .chip-en{font-size:0.72rem;color:var(--muted)}
+
+  /* VERDICT */
+  .verdict-btns{display:flex;gap:12px;margin-top:20px}
+  .btn-know,.btn-dontknow{flex:1;padding:15px;border-radius:14px;border:none;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.05em;transition:all 0.15s;font-family:'Lato',sans-serif}
+  .btn-know{background:rgba(74,154,106,0.15);border:1px solid rgba(74,154,106,0.3);color:var(--correct)}
+  .btn-know:active{background:rgba(74,154,106,0.28);transform:scale(0.98)}
+  .btn-dontknow{background:rgba(200,64,64,0.12);border:1px solid rgba(200,64,64,0.25);color:var(--wrong)}
+  .btn-dontknow:active{background:rgba(200,64,64,0.22);transform:scale(0.98)}
+
+  /* WORD NAV */
+  .word-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:12px}
+  .nav-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all 0.15s}
+  .nav-btn:active{border-color:var(--accent);color:var(--accent)}
+  .nav-btn:disabled{opacity:0.3;cursor:default}
+  .word-counter{font-size:0.8rem;color:var(--muted);font-weight:700;min-width:60px;text-align:center}
+
+  /* REVIEW BANNER */
+  .review-banner{background:rgba(200,64,64,0.1);border:1px solid rgba(200,64,64,0.2);border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+  .review-banner-text{font-size:0.82rem;color:var(--wrong);font-weight:700}
+  .review-banner-count{background:var(--wrong);color:white;border-radius:20px;padding:2px 10px;font-size:0.75rem;font-weight:700}
+
+  /* COMPLETE */
+  .complete-screen{display:none;text-align:center;padding:40px 20px;animation:cardIn 0.4s ease}
+  .complete-screen.active{display:block}
+  .complete-emoji{font-size:4rem;margin-bottom:16px}
+  .complete-title{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--accent);margin-bottom:8px}
+  .complete-sub{font-size:0.9rem;color:var(--muted);margin-bottom:30px}
+  .btn-restart{background:rgba(232,160,64,0.15);border:1px solid rgba(232,160,64,0.3);color:var(--accent);border-radius:14px;padding:14px 32px;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:'Lato',sans-serif}
+
+  /* STATS */
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 16px;text-align:center}
+  .stat-number{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;color:var(--accent);line-height:1;margin-bottom:5px}
+  .stat-label{font-size:0.68rem;color:var(--muted);font-weight:700;letter-spacing:0.1em;text-transform:uppercase}
+  .section-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--text);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+  /* WORD LIST */
+  .word-list-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color 0.15s}
+  .word-list-item:active{border-color:rgba(232,160,64,0.3)}
+  .word-list-kr{font-family:'Noto Serif KR',serif;font-size:1.15rem;font-weight:700;color:var(--text)}
+  .word-list-hanja{font-size:0.72rem;color:var(--hanja);margin-top:2px}
+  .word-list-right{display:flex;align-items:center;gap:10px}
+  .word-list-en{font-size:0.82rem;color:var(--muted);font-style:italic;text-align:right}
+  .mastery-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .mastery-new{background:var(--muted)} .mastery-learning{background:var(--accent)} .mastery-known{background:var(--correct)}
+
+  /* ABOUT */
+  .about-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:16px;text-align:center}
+  .about-logo-big{font-family:'Noto Serif KR',serif;font-size:3rem;font-weight:900;color:var(--accent);margin-bottom:6px}
+  .about-tagline{font-size:0.9rem;color:var(--muted);font-style:italic;font-family:'Playfair Display',serif}
+  .about-desc{font-size:0.88rem;color:var(--muted);line-height:1.7;margin-top:16px}
+  .tip-card{background:rgba(232,160,64,0.06);border:1px solid rgba(232,160,64,0.12);border-radius:14px;padding:16px;margin-bottom:10px}
+  .tip-title{font-size:0.75rem;font-weight:700;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px}
+  .tip-text{font-size:0.85rem;color:var(--muted);line-height:1.6}
+
+  /* ═══════════════════════════════
+     OVERLAY PAGE STACK
+  ═══════════════════════════════ */
+  .overlay-page{position:fixed;inset:0;z-index:300;background:var(--bg);transform:translateX(100%);transition:transform 0.32s cubic-bezier(0.4,0,0.2,1);overflow-y:auto}
+  .overlay-page.open{transform:translateX(0)}
+  .overlay-header{position:sticky;top:0;background:rgba(15,14,12,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:14px;z-index:10}
+  .back-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;transition:all 0.15s}
+  .back-btn:active{border-color:var(--accent);color:var(--accent)}
+  .overlay-title{font-family:'Noto Serif KR',serif;font-size:1rem;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* BREADCRUMB */
+  .breadcrumb{display:flex;align-items:center;gap:4px;padding:7px 20px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}
+  .breadcrumb::-webkit-scrollbar{display:none}
+  .bc-item{font-size:0.68rem;color:var(--muted);white-space:nowrap;cursor:pointer;padding:2px 4px;border-radius:4px}
+  .bc-item:active{color:var(--accent)}
+  .bc-sep{font-size:0.68rem;color:var(--soft)}
+  .bc-current{color:var(--accent);font-weight:700}
+
+  /* HANJA LIST PAGE */
+  .hanja-hero{padding:28px 20px 20px;text-align:center;border-bottom:1px solid var(--border);margin-bottom:16px;position:relative}
+  .hanja-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(212,136,58,0.08) 0%,transparent 70%);pointer-events:none}
+  .hanja-big-char{font-family:'Noto Serif KR',serif;font-size:5rem;color:var(--hanja);line-height:1;margin-bottom:8px}
+  .hanja-big-kr{font-family:'Noto Serif KR',serif;font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:4px}
+  .hanja-big-en{font-size:0.9rem;color:var(--muted);font-style:italic;font-family:'Playfair Display',serif}
+  .hanja-note{margin-top:10px;display:inline-block;font-size:0.68rem;color:var(--muted);background:var(--soft);border-radius:20px;padding:4px 12px}
+  .hanja-words-wrap{padding:0 16px 80px;max-width:500px;margin:0 auto}
+  .hanja-words-label{font-size:0.68rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .hanja-word-row{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color 0.15s;animation:cardIn 0.3s ease both}
+  .hanja-word-row:active{border-color:rgba(212,136,58,0.4)}
+  .hanja-row-left{display:flex;align-items:center;gap:12px}
+  .hanja-row-char{font-family:'Noto Serif KR',serif;font-size:1.6rem;font-weight:900;color:var(--hanja);line-height:1;min-width:32px;text-align:center}
+  .hanja-row-kr{font-family:'Noto Serif KR',serif;font-size:1.05rem;font-weight:700;color:var(--text)}
+  .hanja-row-hanja{font-size:0.7rem;color:var(--hanja);opacity:0.7;margin-top:2px}
+  .hanja-row-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+  .hanja-row-en{font-size:0.82rem;color:var(--muted);font-style:italic}
+  .hanja-row-actions{display:flex;gap:6px;align-items:center}
+  .tts-mini{background:rgba(232,160,64,0.1);border:1px solid rgba(232,160,64,0.2);border-radius:20px;padding:3px 10px;font-size:0.7rem;color:var(--accent);cursor:pointer}
+  .detail-arrow{font-size:0.7rem;color:var(--muted)}
+
+  /* WORD DETAIL OVERLAY */
+  .word-detail-inner{padding:20px 16px 80px;max-width:500px;margin:0 auto}
+
+  /* SEARCH */
+  .search-wrap{position:relative;margin-bottom:16px}
+  .search-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:13px 44px 13px 16px;font-size:0.95rem;font-family:'Lato',sans-serif;color:var(--text);outline:none;transition:border-color 0.2s}
+  .search-input::placeholder{color:var(--muted)}
+  .search-input:focus{border-color:rgba(232,160,64,0.4)}
+  .search-clear{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;display:none;padding:4px}
+  .search-count{font-size:0.7rem;color:var(--muted);margin-bottom:10px;padding-left:4px}
+  .search-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:0.9rem}
+  .search-empty-icon{font-size:2.5rem;margin-bottom:10px}
+
+  /* IDIOM CARD */
+  .idiom-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:28px 24px 24px;margin-bottom:16px;position:relative;overflow:visible;animation:cardIn 0.35s cubic-bezier(0.4,0,0.2,1)}
+  .idiom-chars{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+  .idiom-char-block{display:flex;flex-direction:column;align-items:center;background:rgba(212,136,58,0.08);border:1px solid rgba(212,136,58,0.15);border-radius:12px;padding:12px 10px;gap:4px;flex:1;min-width:60px;cursor:pointer;transition:background 0.15s,border-color 0.15s}
+  .idiom-char-block:active{background:rgba(212,136,58,0.22);border-color:rgba(212,136,58,0.5)}
+  .idiom-char-glyph{font-family:'Noto Serif KR',serif;font-size:2.2rem;color:var(--hanja);line-height:1;font-weight:700}
+  .idiom-char-kr{font-family:'Noto Serif KR',serif;font-size:0.9rem;font-weight:700;color:var(--text)}
+  .idiom-char-en{font-size:0.68rem;color:var(--muted);text-align:center;line-height:1.3}
+  .idiom-char-tap{font-size:0.58rem;color:var(--hanja);opacity:0.6;margin-top:2px}
+  .idiom-title{font-family:'Noto Serif KR',serif;font-size:3rem;font-weight:900;color:var(--text);line-height:1;letter-spacing:0.05em;margin-bottom:6px}
+  .idiom-hanja{font-size:1.1rem;color:var(--hanja);font-family:'Noto Serif KR',serif;margin-bottom:4px;opacity:0.8}
+  .idiom-roman{font-size:0.9rem;color:var(--muted);font-style:italic;font-family:'Playfair Display',serif;margin-bottom:16px}
+  .idiom-meaning-box{background:rgba(232,160,64,0.06);border:1px solid rgba(232,160,64,0.12);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+  .idiom-literal{font-size:0.72rem;color:var(--hanja);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px}
+  .idiom-literal-text{font-family:'Noto Serif KR',serif;font-size:1rem;color:var(--muted);margin-bottom:10px}
+  .idiom-english{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--accent)}
+  .idiom-origin-box{background:rgba(200,90,42,0.06);border:1px solid rgba(200,90,42,0.12);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+  .idiom-origin-label{font-size:0.62rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent2);margin-bottom:6px}
+  .idiom-origin-text{font-size:0.88rem;color:var(--muted);line-height:1.8}
+  .idiom-situation-label{font-size:0.62rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .idiom-situation-tag{display:inline-block;background:rgba(232,160,64,0.1);border:1px solid rgba(232,160,64,0.2);border-radius:20px;padding:4px 12px;font-size:0.75rem;color:var(--accent);font-weight:700;margin-bottom:14px}
+
+  /* IDIOM LIST ITEM */
+  .idiom-list-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color 0.15s}
+  .idiom-list-item:active{border-color:rgba(232,160,64,0.3)}
+  .idiom-list-kr{font-family:'Noto Serif KR',serif;font-size:1.3rem;font-weight:900;color:var(--text)}
+  .idiom-list-hanja{font-size:0.78rem;color:var(--hanja);margin-top:2px;opacity:0.8}
+  .idiom-list-en{font-size:0.82rem;color:var(--muted);font-style:italic;text-align:right;max-width:160px}
+  .idiom-badge{display:inline-block;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;background:rgba(200,90,42,0.15);border:1px solid rgba(200,90,42,0.25);color:var(--accent2);border-radius:4px;padding:2px 6px;margin-left:6px;vertical-align:middle}
+
+  /* CLICKABLE WORD IN SENTENCE */
+  .word-link{color:var(--accent);font-weight:900;border-bottom:1px dashed rgba(232,160,64,0.4);cursor:pointer;font-family:'Noto Serif KR',serif}
+  .word-link:active{opacity:0.7}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 20px;font-size:0.85rem;color:var(--text);font-weight:700;z-index:9999;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);white-space:nowrap;pointer-events:none}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-kr">하나둘</div>
+    <div class="logo-en">Korean · One by One</div>
+  </div>
+  <div class="streak-badge">🔥 <span id="streakCount">1</span></div>
+</header>
+
+<div class="nav-tabs">
+  <button class="nav-tab active" onclick="showPage('study',this)">📖 Study</button>
+  <button class="nav-tab" onclick="showPage('idioms',this)">🀄 사자성어</button>
+  <button class="nav-tab" onclick="showPage('words',this)">📚 Words</button>
+  <button class="nav-tab" onclick="showPage('stats',this)">📊 Stats</button>
+  <button class="nav-tab" onclick="showPage('about',this)">ℹ️ About</button>
+</div>
+
+<!-- IDIOMS PAGE -->
+<div class="page" id="page-idioms">
+  <div class="search-wrap">
+    <input class="search-input" id="idiomSearchInput" type="text" placeholder="🔍  Search idioms..." oninput="onIdiomSearch(this.value)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <button class="search-clear" id="idiomSearchClear" onclick="clearIdiomSearch()">✕</button>
+  </div>
+  <div class="search-count" id="idiomSearchCount"></div>
+  <div class="section-title" id="idiomsTitle">사자성어 · Four-Character Idioms</div>
+  <div id="idiomListContainer"></div>
+</div>
+
+<!-- STUDY PAGE -->
+<div class="page active" id="page-study">
+  <div class="progress-section">
+    <div class="progress-header">
+      <span class="progress-title">Today's Progress</span>
+      <span class="progress-count" id="progressCount">0 / 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+  <div id="reviewBanner" class="review-banner" style="display:none" onclick="startReview()">
+    <span class="review-banner-text">⚠️ Words to review</span>
+    <span class="review-banner-count" id="reviewCount">0</span>
+  </div>
+  <div id="studyCardWrap">
+    <div class="word-card" id="wordCard">
+      <div class="card-glow"></div>
+      <div class="card-category" id="cardCategory"></div>
+      <div class="card-main">
+        <div class="korean-word" id="koreanWord"></div>
+        <button class="tts-btn" onclick="speakWord()">🔊</button>
+      </div>
+      <div class="romanization" id="romanization"></div>
+      <div class="english-meaning" id="englishMeaning"></div>
+      <div class="hanja-section">
+        <div class="hanja-label">⬡ Hanja Origin · 한자 어원</div>
+        <div class="hanja-chars" id="hanjaChars"></div>
+      </div>
+      <div class="examples-label">💬 Example Sentences</div>
+      <div id="examplesWrap"></div>
+      <div class="related-section">
+        <div class="related-label">🔗 Related Words · tap to explore</div>
+        <div class="related-chips" id="relatedChips"></div>
+      </div>
+    </div>
+    <div class="verdict-btns">
+      <button class="btn-dontknow" onclick="markWord(false)">✗ Not Yet</button>
+      <button class="btn-know" onclick="markWord(true)">✓ Got It!</button>
+    </div>
+    <div class="word-nav">
+      <button class="nav-btn" id="btnPrev" onclick="prevWord()">←</button>
+      <span class="word-counter" id="wordCounter">1 / 1</span>
+      <button class="nav-btn" id="btnNext" onclick="nextWord()">→</button>
+    </div>
+  </div>
+  <div class="complete-screen" id="completeScreen">
+    <div class="complete-emoji">🎉</div>
+    <div class="complete-title">Session Complete!</div>
+    <div class="complete-sub" id="completeSubtext"></div>
+    <button class="btn-restart" onclick="restartSession()">↺ Study Again</button>
+  </div>
+</div>
+
+<!-- WORDS PAGE -->
+<div class="page" id="page-words">
+  <div class="search-wrap">
+    <input class="search-input" id="searchInput" type="text" placeholder="🔍  Search in Korean or English..." oninput="onSearch(this.value)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+  </div>
+  <div class="search-count" id="searchCount"></div>
+  <div class="section-title" id="wordsTitle">Word List</div>
+  <div id="wordListContainer"></div>
+</div>
+
+<!-- STATS PAGE -->
+<div class="page" id="page-stats">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-number" id="statTotal">0</div><div class="stat-label">Total Words</div></div>
+    <div class="stat-card"><div class="stat-number" id="statKnown">0</div><div class="stat-label">Mastered</div></div>
+    <div class="stat-card"><div class="stat-number" id="statReview">0</div><div class="stat-label">To Review</div></div>
+    <div class="stat-card"><div class="stat-number" id="statStreak">1</div><div class="stat-label">Day Streak 🔥</div></div>
+  </div>
+  <div class="section-title">Mastery Progress</div>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+      <span style="font-size:0.78rem;color:var(--muted)">● New</span>
+      <span style="font-size:0.78rem;color:var(--accent)">● Learning</span>
+      <span style="font-size:0.78rem;color:var(--correct)">● Mastered</span>
+    </div>
+    <div style="height:10px;background:var(--soft);border-radius:99px;overflow:hidden;display:flex">
+      <div id="barNew" style="background:var(--muted);height:100%;transition:width 0.5s"></div>
+      <div id="barLearning" style="background:var(--accent);height:100%;transition:width 0.5s"></div>
+      <div id="barKnown" style="background:var(--correct);height:100%;transition:width 0.5s"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT PAGE -->
+<div class="page" id="page-about">
+  <div class="about-card">
+    <div class="about-logo-big">하나둘</div>
+    <div class="about-tagline">One by one · 하나씩 둘씩</div>
+    <div class="about-desc">A Korean vocabulary app built with love — learn one word at a time, explore Hanja origins, and follow words wherever they lead.</div>
+  </div>
+  <div class="section-title">How to Use</div>
+  <div class="tip-card"><div class="tip-title">📖 Study Tab</div><div class="tip-text">Tap <strong>Got It!</strong> or <strong>Not Yet</strong>. Missed words are queued for review automatically.</div></div>
+  <div class="tip-card"><div class="tip-title">⬡ Hanja Characters</div><div class="tip-text">Tap any Hanja character to see all words that share it. Tap those words to keep exploring — the chain never ends!</div></div>
+  <div class="tip-card"><div class="tip-title">🔗 Related Words</div><div class="tip-text">Every word card shows related words. Tap any of them to open a full card — and keep going from there.</div></div>
+  <div class="tip-card"><div class="tip-title">🔊 Pronunciation</div><div class="tip-text">Tap 🔊 on any word or sentence to hear it spoken aloud in Korean.</div></div>
+</div>
+
+<!-- OVERLAY STACK CONTAINER -->
+<div id="overlayStack"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA (from data.js) ──
+// ═══════════════════════════════════════════════════════════════
+//  하나둘 (Hana Dul) — Word Database
+//  data.js — 단어, 한자, 사자성어 데이터
+// ═══════════════════════════════════════════════════════════════
+
+const WORDS = {
+
+  // ══════════════════════════════════════
+  //  일상 · Daily Life
+  // ══════════════════════════════════════
+  "시간":{ korean:"시간", romanization:"si-gan", hanja:"時間", english:"Time", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"時",korean:"시",meaning:"time · hour"},{char:"間",korean:"간",meaning:"between · interval"}],
+    examples:[{korean:"시간이 없어요.",english:"I don't have time."},{korean:"몇 시예요?",english:"What time is it?"},{korean:"시간이 빨리 가네요.",english:"Time goes by so fast."}],
+    related:["시계","순간","기간","시작"] },
+
+  "약속":{ korean:"약속", romanization:"yak-sok", hanja:"約束", english:"Promise / Appointment", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"約",korean:"약",meaning:"promise · approximately"},{char:"束",korean:"속",meaning:"bind · bundle"}],
+    examples:[{korean:"약속이 있어요.",english:"I have an appointment."},{korean:"약속을 지켜요.",english:"Keep your promise."},{korean:"내일 약속이에요.",english:"We have plans tomorrow."}],
+    related:["시간","친구","신뢰"] },
+
+  "전화":{ korean:"전화", romanization:"jeon-hwa", hanja:"電話", english:"Phone call / Telephone", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"電",korean:"전",meaning:"electricity · lightning"},{char:"話",korean:"화",meaning:"talk · speech"}],
+    examples:[{korean:"전화해요.",english:"Call me."},{korean:"전화가 왔어요.",english:"I got a call."},{korean:"전화번호가 뭐예요?",english:"What's your phone number?"}],
+    related:["문자","연락","소통"] },
+
+  "문자":{ korean:"문자", romanization:"mun-ja", hanja:"文字", english:"Text message / Character", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"文",korean:"문",meaning:"writing · culture"},{char:"字",korean:"자",meaning:"character · letter"}],
+    examples:[{korean:"문자 보냈어요.",english:"I sent a text."},{korean:"문자 확인해요.",english:"Check the text message."},{korean:"한글은 문자예요.",english:"Hangul is a writing system."}],
+    related:["전화","언어","소통"] },
+
+  "운동":{ korean:"운동", romanization:"un-dong", hanja:"運動", english:"Exercise / Movement / Sports", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"運",korean:"운",meaning:"move · transport · luck"},{char:"動",korean:"동",meaning:"move · action"}],
+    examples:[{korean:"운동해요.",english:"I exercise."},{korean:"운동을 좋아해요.",english:"I like sports."},{korean:"매일 운동해요.",english:"I exercise every day."}],
+    related:["건강","체력","땀"] },
+
+  "건강":{ korean:"건강", romanization:"geon-gang", hanja:"健康", english:"Health", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"健",korean:"건",meaning:"healthy · strong"},{char:"康",korean:"강",meaning:"peaceful · healthy"}],
+    examples:[{korean:"건강이 최고예요.",english:"Health is the most important thing."},{korean:"건강을 챙기세요.",english:"Take care of your health."},{korean:"건강하게 살아요.",english:"Live healthily."}],
+    related:["운동","음식","행복"] },
+
+  "날씨":{ korean:"날씨", romanization:"nal-ssi", hanja:null, english:"Weather", category:"일상 · Daily Life",
+    hanja_breakdown:[],
+    examples:[{korean:"날씨가 좋아요.",english:"The weather is nice."},{korean:"날씨가 어때요?",english:"How's the weather?"},{korean:"날씨가 추워요.",english:"The weather is cold."}],
+    related:["계절","비","바람","하늘"] },
+
+  "시작":{ korean:"시작", romanization:"si-jak", hanja:"始作", english:"Beginning / Start", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"始",korean:"시",meaning:"begin · start"},{char:"作",korean:"작",meaning:"make · create"}],
+    examples:[{korean:"시작이 반이에요.",english:"Starting is half the battle."},{korean:"언제 시작해요?",english:"When does it start?"},{korean:"새로운 시작이에요.",english:"It's a new beginning."}],
+    related:["끝","처음","시간"] },
+
+  "끝":{ korean:"끝", romanization:"kkeut", hanja:null, english:"End / Finish", category:"일상 · Daily Life",
+    hanja_breakdown:[],
+    examples:[{korean:"끝났어요.",english:"It's over/finished."},{korean:"끝까지 해요.",english:"Do it to the end."},{korean:"끝이 좋아야 해요.",english:"The ending needs to be good."}],
+    related:["시작","순간","결과"] },
+
+  "결과":{ korean:"결과", romanization:"gyeol-gwa", hanja:"結果", english:"Result / Outcome", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"結",korean:"결",meaning:"tie · conclude"},{char:"果",korean:"과",meaning:"fruit · result"}],
+    examples:[{korean:"결과가 좋아요.",english:"The result is good."},{korean:"결과를 기다려요.",english:"I'm waiting for the result."},{korean:"노력한 결과예요.",english:"It's the result of hard work."}],
+    related:["시작","끝","성공"] },
+
+  "성공":{ korean:"성공", romanization:"seong-gong", hanja:"成功", english:"Success", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"成",korean:"성",meaning:"achieve · become"},{char:"功",korean:"공",meaning:"achievement · merit"}],
+    examples:[{korean:"성공했어요!",english:"I succeeded!"},{korean:"성공을 축하해요.",english:"Congratulations on your success."},{korean:"성공의 비결이에요.",english:"It's the secret to success."}],
+    related:["결과","노력","행복","실패"] },
+
+  "실패":{ korean:"실패", romanization:"sil-pae", hanja:"失敗", english:"Failure", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"失",korean:"실",meaning:"lose · fail"},{char:"敗",korean:"패",meaning:"defeat · fail"}],
+    examples:[{korean:"실패해도 괜찮아요.",english:"It's okay to fail."},{korean:"실패는 성공의 어머니예요.",english:"Failure is the mother of success."},{korean:"실패에서 배워요.",english:"Learn from failure."}],
+    related:["성공","결과","노력"] },
+
+  "노력":{ korean:"노력", romanization:"no-ryeok", hanja:"努力", english:"Effort / Hard work", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"努",korean:"노",meaning:"strive · exert"},{char:"力",korean:"력",meaning:"power · strength"}],
+    examples:[{korean:"노력하면 돼요.",english:"If you try hard, you can do it."},{korean:"노력이 필요해요.",english:"It requires effort."},{korean:"열심히 노력했어요.",english:"I worked really hard."}],
+    related:["성공","결과","의지"] },
+
+  // ══════════════════════════════════════
+  //  음식 · Food
+  // ══════════════════════════════════════
+  "식사":{ korean:"식사", romanization:"sik-sa", hanja:"食事", english:"Meal / Dining", category:"음식 · Food",
+    hanja_breakdown:[{char:"食",korean:"식",meaning:"eat · food"},{char:"事",korean:"사",meaning:"matter · affair"}],
+    examples:[{korean:"식사했어요?",english:"Have you eaten?"},{korean:"같이 식사해요.",english:"Let's eat together."},{korean:"식사가 맛있어요.",english:"The meal is delicious."}],
+    related:["식당","음식","조식","점심","저녁"] },
+
+  "식당":{ korean:"식당", romanization:"sik-dang", hanja:"食堂", english:"Restaurant / Cafeteria", category:"음식 · Food",
+    hanja_breakdown:[{char:"食",korean:"식",meaning:"eat · food"},{char:"堂",korean:"당",meaning:"hall · building"}],
+    examples:[{korean:"식당에 가요.",english:"Let's go to the restaurant."},{korean:"식당이 어디예요?",english:"Where is the restaurant?"},{korean:"학교 식당이에요.",english:"It's the school cafeteria."}],
+    related:["식사","음식","급식"] },
+
+  "식품":{ korean:"식품", romanization:"sik-pum", hanja:"食品", english:"Food product / Groceries", category:"음식 · Food",
+    hanja_breakdown:[{char:"食",korean:"식",meaning:"eat · food"},{char:"品",korean:"품",meaning:"product · quality"}],
+    examples:[{korean:"식품을 사러 가요.",english:"I'm going to buy groceries."},{korean:"식품 알레르기가 있어요.",english:"I have a food allergy."},{korean:"유기농 식품이에요.",english:"It's organic food."}],
+    related:["식사","음식","식당"] },
+
+  "음식":{ korean:"음식", romanization:"eum-sik", hanja:"飮食", english:"Food / Cuisine", category:"음식 · Food",
+    hanja_breakdown:[{char:"飮",korean:"음",meaning:"drink · consume"},{char:"食",korean:"식",meaning:"eat · food"}],
+    examples:[{korean:"음식이 맛있어요.",english:"The food is delicious."},{korean:"한국 음식을 좋아해요.",english:"I like Korean food."},{korean:"음식을 남기면 안 돼요.",english:"You shouldn't waste food."}],
+    related:["식사","식당","식품","조식"] },
+
+  "급식":{ korean:"급식", romanization:"geup-sik", hanja:"給食", english:"School meal / Cafeteria food", category:"음식 · Food",
+    hanja_breakdown:[{char:"給",korean:"급",meaning:"supply · provide"},{char:"食",korean:"식",meaning:"eat · food"}],
+    examples:[{korean:"급식이 맛있어요.",english:"The school lunch is delicious."},{korean:"오늘 급식 메뉴가 뭐예요?",english:"What's today's lunch menu?"},{korean:"급식 시간이에요.",english:"It's lunch time."}],
+    related:["식사","식당","시간"] },
+
+  "조식":{ korean:"조식", romanization:"jo-sik", hanja:"朝食", english:"Breakfast", category:"음식 · Food",
+    hanja_breakdown:[{char:"朝",korean:"조",meaning:"morning · dawn"},{char:"食",korean:"식",meaning:"eat · food"}],
+    examples:[{korean:"조식이 포함돼요.",english:"Breakfast is included."},{korean:"조식을 먹었어요?",english:"Did you have breakfast?"},{korean:"조식 뷔페예요.",english:"It's a breakfast buffet."}],
+    related:["점심","저녁","식사","음식"] },
+
+  "점심":{ korean:"점심", romanization:"jeom-sim", hanja:"點心", english:"Lunch", category:"음식 · Food",
+    hanja_breakdown:[{char:"點",korean:"점",meaning:"dot · point"},{char:"心",korean:"심",meaning:"heart · mind"}],
+    examples:[{korean:"점심 먹었어요?",english:"Did you have lunch?"},{korean:"점심 같이 먹어요.",english:"Let's have lunch together."},{korean:"점심시간이에요.",english:"It's lunchtime."}],
+    related:["조식","저녁","식사"] },
+
+  "저녁":{ korean:"저녁", romanization:"jeo-nyeok", hanja:null, english:"Evening / Dinner", category:"음식 · Food",
+    hanja_breakdown:[],
+    examples:[{korean:"저녁 먹었어요?",english:"Did you have dinner?"},{korean:"저녁에 만나요.",english:"Let's meet in the evening."},{korean:"저녁노을이 예뻐요.",english:"The evening glow is beautiful."}],
+    related:["조식","점심","밤","시간"] },
+
+  "맛":{ korean:"맛", romanization:"mat", hanja:null, english:"Taste / Flavor", category:"음식 · Food",
+    hanja_breakdown:[],
+    examples:[{korean:"맛있어요!",english:"It's delicious!"},{korean:"맛이 어때요?",english:"How does it taste?"},{korean:"단맛이 나요.",english:"It tastes sweet."}],
+    related:["음식","식사","향기"] },
+
+  "요리":{ korean:"요리", romanization:"yo-ri", hanja:"料理", english:"Cooking / Cuisine", category:"음식 · Food",
+    hanja_breakdown:[{char:"料",korean:"료",meaning:"material · measure"},{char:"理",korean:"리",meaning:"reason · manage · cook"}],
+    examples:[{korean:"요리를 잘해요.",english:"I'm good at cooking."},{korean:"한국 요리예요.",english:"It's Korean cuisine."},{korean:"요리하는 게 좋아요.",english:"I enjoy cooking."}],
+    related:["음식","식사","맛"] },
+
+  "재료":{ korean:"재료", romanization:"jae-ryo", hanja:"材料", english:"Ingredient / Material", category:"음식 · Food",
+    hanja_breakdown:[{char:"材",korean:"재",meaning:"material · timber"},{char:"料",korean:"료",meaning:"material · measure"}],
+    examples:[{korean:"재료가 신선해요.",english:"The ingredients are fresh."},{korean:"재료를 준비해요.",english:"Prepare the ingredients."},{korean:"비밀 재료예요.",english:"It's a secret ingredient."}],
+    related:["요리","음식","식품"] },
+
+  // ══════════════════════════════════════
+  //  감정 · Emotions
+  // ══════════════════════════════════════
+  "감정":{ korean:"감정", romanization:"gam-jeong", hanja:"感情", english:"Emotion / Feeling", category:"감정 · Emotion",
+    hanja_breakdown:[{char:"感",korean:"감",meaning:"feel · sense"},{char:"情",korean:"정",meaning:"feeling · affection"}],
+    examples:[{korean:"감정을 표현해요.",english:"Express your emotions."},{korean:"복잡한 감정이에요.",english:"It's a complex feeling."},{korean:"감정이 풍부해요.",english:"She's very emotional."}],
+    related:["기억","사랑","행복","기분"] },
+
+  "기분":{ korean:"기분", romanization:"gi-bun", hanja:"氣分", english:"Mood / Feeling", category:"감정 · Emotion",
+    hanja_breakdown:[{char:"氣",korean:"기",meaning:"energy · spirit · air"},{char:"分",korean:"분",meaning:"divide · part · minute"}],
+    examples:[{korean:"기분이 좋아요.",english:"I'm in a good mood."},{korean:"기분이 어때요?",english:"How are you feeling?"},{korean:"기분 전환해요.",english:"Let's change the mood."}],
+    related:["감정","행복","슬픔"] },
+
+  "행복":{ korean:"행복", romanization:"haeng-bok", hanja:"幸福", english:"Happiness", category:"감정 · Emotion",
+    hanja_breakdown:[{char:"幸",korean:"행",meaning:"fortune · luck"},{char:"福",korean:"복",meaning:"blessing · good fortune"}],
+    examples:[{korean:"행복해요.",english:"I'm happy."},{korean:"행복을 찾아요.",english:"I'm looking for happiness."},{korean:"작은 것에서 행복을 느껴요.",english:"I find happiness in small things."}],
+    related:["감정","사랑","가족","기쁨"] },
+
+  "기쁨":{ korean:"기쁨", romanization:"gi-ppeum", hanja:null, english:"Joy / Delight", category:"감정 · Emotion",
+    hanja_breakdown:[],
+    examples:[{korean:"기쁨을 나눠요.",english:"Share the joy."},{korean:"기쁨의 눈물이에요.",english:"These are tears of joy."},{korean:"기쁨이 넘쳐요.",english:"I'm overflowing with joy."}],
+    related:["행복","감정","웃음"] },
+
+  "슬픔":{ korean:"슬픔", romanization:"seul-peum", hanja:null, english:"Sadness / Sorrow", category:"감정 · Emotion",
+    hanja_breakdown:[],
+    examples:[{korean:"슬픔을 감추지 마세요.",english:"Don't hide your sadness."},{korean:"슬픔이 밀려와요.",english:"Sadness is washing over me."},{korean:"슬픔을 이겨내요.",english:"Overcome the sadness."}],
+    related:["감정","눈물","기분","위로"] },
+
+  "위로":{ korean:"위로", romanization:"wi-ro", hanja:"慰勞", english:"Comfort / Consolation", category:"감정 · Emotion",
+    hanja_breakdown:[{char:"慰",korean:"위",meaning:"comfort · console"},{char:"勞",korean:"로",meaning:"labor · console"}],
+    examples:[{korean:"위로가 돼요.",english:"That's comforting."},{korean:"위로의 말이 필요해요.",english:"I need words of comfort."},{korean:"친구가 위로해줬어요.",english:"My friend comforted me."}],
+    related:["슬픔","감정","사랑","친구"] },
+
+  "사랑":{ korean:"사랑", romanization:"sa-rang", hanja:null, english:"Love", category:"감정 · Emotion",
+    hanja_breakdown:[],
+    examples:[{korean:"사랑해요.",english:"I love you."},{korean:"사랑이 넘쳐요.",english:"It's overflowing with love."},{korean:"진정한 사랑이에요.",english:"It's true love."}],
+    related:["감정","행복","가족","그리움"] },
+
+  "그리움":{ korean:"그리움", romanization:"geu-ri-um", hanja:null, english:"Longing / Yearning / Missing someone", category:"감정 · Emotion",
+    hanja_breakdown:[],
+    examples:[{korean:"그리움이 밀려와요.",english:"I'm overwhelmed with longing."},{korean:"너무 그리워요.",english:"I miss you so much."},{korean:"고향이 그리워요.",english:"I miss my hometown."}],
+    related:["사랑","기억","감정","추억"] },
+
+  "추억":{ korean:"추억", romanization:"chu-eok", hanja:"追憶", english:"Memory / Reminiscence", category:"감정 · Emotion",
+    hanja_breakdown:[{char:"追",korean:"추",meaning:"pursue · recall"},{char:"憶",korean:"억",meaning:"recollect · remember"}],
+    examples:[{korean:"추억이 새록새록해요.",english:"Memories come flooding back."},{korean:"좋은 추억을 만들어요.",english:"Let's make good memories."},{korean:"추억의 장소예요.",english:"It's a place full of memories."}],
+    related:["기억","그리움","순간","감정"] },
+
+  "기억":{ korean:"기억", romanization:"gi-eok", hanja:"記憶", english:"Memory / Recollection", category:"감정 · Emotion",
+    hanja_breakdown:[{char:"記",korean:"기",meaning:"record · remember"},{char:"憶",korean:"억",meaning:"recollect · think of"}],
+    examples:[{korean:"그 기억이 소중해요.",english:"That memory is precious."},{korean:"기억이 안 나요.",english:"I can't remember."},{korean:"좋은 기억을 만들어요.",english:"Let's make good memories."}],
+    related:["순간","감정","당시","추억"] },
+
+  "순간":{ korean:"순간", romanization:"sun-gan", hanja:"瞬間", english:"Moment / Instant", category:"감정 · Emotion",
+    hanja_breakdown:[{char:"瞬",korean:"순",meaning:"blink · instant"},{char:"間",korean:"간",meaning:"between · interval"}],
+    examples:[{korean:"그 순간을 잊을 수 없어요.",english:"I can't forget that moment."},{korean:"순간적으로 결정했어요.",english:"I decided in an instant."},{korean:"아름다운 순간이에요.",english:"It's a beautiful moment."}],
+    related:["시간","기억","감정","기간"] },
+
+  "웃음":{ korean:"웃음", romanization:"u-seum", hanja:null, english:"Laughter / Smile", category:"감정 · Emotion",
+    hanja_breakdown:[],
+    examples:[{korean:"웃음이 나요.",english:"I can't help laughing."},{korean:"웃음을 잃지 마세요.",english:"Don't lose your smile."},{korean:"웃음이 최고의 약이에요.",english:"Laughter is the best medicine."}],
+    related:["행복","기쁨","감정"] },
+
+  "눈물":{ korean:"눈물", romanization:"nun-mul", hanja:null, english:"Tears", category:"감정 · Emotion",
+    hanja_breakdown:[],
+    examples:[{korean:"눈물이 나요.",english:"Tears are coming."},{korean:"눈물을 참았어요.",english:"I held back my tears."},{korean:"기쁨의 눈물이에요.",english:"These are tears of joy."}],
+    related:["슬픔","감정","기쁨"] },
+
+  // ══════════════════════════════════════
+  //  가족/관계 · Family & Relationships
+  // ══════════════════════════════════════
+  "가족":{ korean:"가족", romanization:"ga-jok", hanja:"家族", english:"Family", category:"가족 · Family",
+    hanja_breakdown:[{char:"家",korean:"가",meaning:"house · home · family"},{char:"族",korean:"족",meaning:"clan · tribe · group"}],
+    examples:[{korean:"가족이 소중해요.",english:"Family is precious."},{korean:"가족과 함께해요.",english:"I'm with my family."},{korean:"우리 가족은 다섯 명이에요.",english:"My family has five members."}],
+    related:["부모","형제","사랑","집"] },
+
+  "부모":{ korean:"부모", romanization:"bu-mo", hanja:"父母", english:"Parents", category:"가족 · Family",
+    hanja_breakdown:[{char:"父",korean:"부",meaning:"father"},{char:"母",korean:"모",meaning:"mother"}],
+    examples:[{korean:"부모님께 감사해요.",english:"I'm grateful to my parents."},{korean:"부모님이 보고 싶어요.",english:"I miss my parents."},{korean:"부모의 사랑이에요.",english:"It's parental love."}],
+    related:["가족","아버지","어머니","사랑"] },
+
+  "아버지":{ korean:"아버지", romanization:"a-beo-ji", hanja:null, english:"Father", category:"가족 · Family",
+    hanja_breakdown:[],
+    examples:[{korean:"아버지가 좋아요.",english:"I love my father."},{korean:"아버지처럼 돼요.",english:"I want to be like my father."},{korean:"아버지께 전화했어요.",english:"I called my father."}],
+    related:["부모","가족","어머니"] },
+
+  "어머니":{ korean:"어머니", romanization:"eo-meo-ni", hanja:null, english:"Mother", category:"가족 · Family",
+    hanja_breakdown:[],
+    examples:[{korean:"어머니가 보고 싶어요.",english:"I miss my mother."},{korean:"어머니의 음식이 최고예요.",english:"My mother's cooking is the best."},{korean:"어머니께 드렸어요.",english:"I gave it to my mother."}],
+    related:["부모","가족","아버지"] },
+
+  "형제":{ korean:"형제", romanization:"hyeong-je", hanja:"兄弟", english:"Siblings / Brothers", category:"가족 · Family",
+    hanja_breakdown:[{char:"兄",korean:"형",meaning:"older brother"},{char:"弟",korean:"제",meaning:"younger brother"}],
+    examples:[{korean:"형제가 있어요?",english:"Do you have siblings?"},{korean:"형제처럼 지내요.",english:"We get along like brothers."},{korean:"형제 사이가 좋아요.",english:"The siblings get along well."}],
+    related:["가족","친구","우정"] },
+
+  "친구":{ korean:"친구", romanization:"chin-gu", hanja:"親舊", english:"Friend", category:"가족 · Family",
+    hanja_breakdown:[{char:"親",korean:"친",meaning:"close · parent · intimate"},{char:"舊",korean:"구",meaning:"old · former"}],
+    examples:[{korean:"친구가 많아요.",english:"I have many friends."},{korean:"오랜 친구예요.",english:"We're old friends."},{korean:"친구가 도와줬어요.",english:"My friend helped me."}],
+    related:["우정","가족","사랑","신뢰"] },
+
+  "우정":{ korean:"우정", romanization:"u-jeong", hanja:"友情", english:"Friendship", category:"가족 · Family",
+    hanja_breakdown:[{char:"友",korean:"우",meaning:"friend · friendly"},{char:"情",korean:"정",meaning:"feeling · affection"}],
+    examples:[{korean:"우정이 소중해요.",english:"Friendship is precious."},{korean:"오랜 우정이에요.",english:"It's a long friendship."},{korean:"우정을 지켜요.",english:"Let's keep our friendship."}],
+    related:["친구","사랑","신뢰"] },
+
+  "신뢰":{ korean:"신뢰", romanization:"sin-roe", hanja:"信賴", english:"Trust / Confidence", category:"가족 · Family",
+    hanja_breakdown:[{char:"信",korean:"신",meaning:"trust · believe"},{char:"賴",korean:"뢰",meaning:"rely · depend"}],
+    examples:[{korean:"신뢰가 중요해요.",english:"Trust is important."},{korean:"신뢰를 쌓아요.",english:"We build trust."},{korean:"신뢰할 수 있어요.",english:"You can trust them."}],
+    related:["친구","우정","사랑"] },
+
+  "사람":{ korean:"사람", romanization:"sa-ram", hanja:null, english:"Person / People", category:"일상 · Daily Life",
+    hanja_breakdown:[],
+    examples:[{korean:"좋은 사람이에요.",english:"They're a good person."},{korean:"많은 사람들이 있어요.",english:"There are many people."},{korean:"어떤 사람이에요?",english:"What kind of person are they?"}],
+    related:["인간","가족","친구","사회"] },
+
+  "인간":{ korean:"인간", romanization:"in-gan", hanja:"人間", english:"Human Being / Mankind", category:"철학 · Philosophy",
+    hanja_breakdown:[{char:"人",korean:"인",meaning:"person · human"},{char:"間",korean:"간",meaning:"between · among"}],
+    examples:[{korean:"인간은 사회적 동물이에요.",english:"Humans are social animals."},{korean:"인간의 본성이에요.",english:"It's human nature."},{korean:"인간답게 살아요.",english:"Live like a human."}],
+    related:["사람","동물","사회","공간"] },
+
+  // ══════════════════════════════════════
+  //  자연/계절 · Nature & Seasons
+  // ══════════════════════════════════════
+  "계절":{ korean:"계절", romanization:"gye-jeol", hanja:"季節", english:"Season", category:"자연 · Nature",
+    hanja_breakdown:[{char:"季",korean:"계",meaning:"season · end of period"},{char:"節",korean:"절",meaning:"season · occasion · joint"}],
+    examples:[{korean:"계절이 바뀌었어요.",english:"The season changed."},{korean:"어떤 계절을 좋아해요?",english:"Which season do you like?"},{korean:"계절마다 달라요.",english:"It's different every season."}],
+    related:["봄","여름","가을","겨울","날씨"] },
+
+  "봄":{ korean:"봄", romanization:"bom", hanja:null, english:"Spring", category:"자연 · Nature",
+    hanja_breakdown:[],
+    examples:[{korean:"봄이 왔어요.",english:"Spring has come."},{korean:"봄꽃이 피어요.",english:"Spring flowers are blooming."},{korean:"봄 날씨예요.",english:"It's spring weather."}],
+    related:["계절","꽃","따뜻함","새로움"] },
+
+  "여름":{ korean:"여름", romanization:"yeo-reum", hanja:null, english:"Summer", category:"자연 · Nature",
+    hanja_breakdown:[],
+    examples:[{korean:"여름이 더워요.",english:"Summer is hot."},{korean:"여름 방학이에요.",english:"It's summer vacation."},{korean:"여름에 바다에 가요.",english:"I go to the sea in summer."}],
+    related:["계절","더위","바다","비"] },
+
+  "가을":{ korean:"가을", romanization:"ga-eul", hanja:null, english:"Autumn / Fall", category:"자연 · Nature",
+    hanja_breakdown:[],
+    examples:[{korean:"가을 단풍이 예뻐요.",english:"The autumn foliage is beautiful."},{korean:"가을 하늘이 높아요.",english:"The autumn sky is high."},{korean:"가을이 좋아요.",english:"I love autumn."}],
+    related:["계절","단풍","추수","시간"] },
+
+  "겨울":{ korean:"겨울", romanization:"gyeo-ul", hanja:null, english:"Winter", category:"자연 · Nature",
+    hanja_breakdown:[],
+    examples:[{korean:"겨울이 추워요.",english:"Winter is cold."},{korean:"겨울에 눈이 와요.",english:"It snows in winter."},{korean:"겨울 옷을 입어요.",english:"I'm wearing winter clothes."}],
+    related:["계절","눈","추위","설상가상"] },
+
+  "하늘":{ korean:"하늘", romanization:"ha-neul", hanja:null, english:"Sky / Heaven", category:"자연 · Nature",
+    hanja_breakdown:[],
+    examples:[{korean:"하늘이 파래요.",english:"The sky is blue."},{korean:"하늘을 봐요.",english:"Look at the sky."},{korean:"하늘이 높아요.",english:"The sky is high."}],
+    related:["구름","바람","날씨","별"] },
+
+  "바람":{ korean:"바람", romanization:"ba-ram", hanja:null, english:"Wind / Desire", category:"자연 · Nature",
+    hanja_breakdown:[],
+    examples:[{korean:"바람이 불어요.",english:"The wind is blowing."},{korean:"시원한 바람이에요.",english:"It's a cool breeze."},{korean:"바람이 강해요.",english:"The wind is strong."}],
+    related:["날씨","하늘","계절"] },
+
+  "비":{ korean:"비", romanization:"bi", hanja:null, english:"Rain", category:"자연 · Nature",
+    hanja_breakdown:[],
+    examples:[{korean:"비가 와요.",english:"It's raining."},{korean:"비가 많이 와요.",english:"It's raining a lot."},{korean:"비 맞았어요.",english:"I got rained on."}],
+    related:["날씨","우산","여름","설상가상"] },
+
+  "꽃":{ korean:"꽃", romanization:"kkot", hanja:null, english:"Flower", category:"자연 · Nature",
+    hanja_breakdown:[],
+    examples:[{korean:"꽃이 예뻐요.",english:"The flower is pretty."},{korean:"꽃을 선물했어요.",english:"I gave flowers as a gift."},{korean:"꽃이 피었어요.",english:"The flower bloomed."}],
+    related:["봄","자연","사랑"] },
+
+  "자연":{ korean:"자연", romanization:"ja-yeon", hanja:"自然", english:"Nature", category:"자연 · Nature",
+    hanja_breakdown:[{char:"自",korean:"자",meaning:"self · natural"},{char:"然",korean:"연",meaning:"so · natural · like that"}],
+    examples:[{korean:"자연이 아름다워요.",english:"Nature is beautiful."},{korean:"자연 속에서 쉬어요.",english:"I rest in nature."},{korean:"자연을 보호해요.",english:"Protect nature."}],
+    related:["계절","환경","하늘","꽃"] },
+
+  "환경":{ korean:"환경", romanization:"hwan-gyeong", hanja:"環境", english:"Environment", category:"자연 · Nature",
+    hanja_breakdown:[{char:"環",korean:"환",meaning:"ring · surround"},{char:"境",korean:"경",meaning:"boundary · environment"}],
+    examples:[{korean:"환경을 보호해요.",english:"Protect the environment."},{korean:"환경 문제예요.",english:"It's an environmental issue."},{korean:"환경이 중요해요.",english:"The environment is important."}],
+    related:["자연","사회","문화"] },
+
+  // ══════════════════════════════════════
+  //  사회/문화 · Society & Culture
+  // ══════════════════════════════════════
+  "사회":{ korean:"사회", romanization:"sa-hoe", hanja:"社會", english:"Society", category:"사회 · Society",
+    hanja_breakdown:[{char:"社",korean:"사",meaning:"society · company · shrine"},{char:"會",korean:"회",meaning:"gather · meet · group"}],
+    examples:[{korean:"사회에 기여해요.",english:"I contribute to society."},{korean:"사회 문제예요.",english:"It's a social issue."},{korean:"사회생활을 해요.",english:"I have a social life."}],
+    related:["문화","인간","역사","환경"] },
+
+  "문화":{ korean:"문화", romanization:"mun-hwa", hanja:"文化", english:"Culture", category:"사회 · Society",
+    hanja_breakdown:[{char:"文",korean:"문",meaning:"writing · culture"},{char:"化",korean:"화",meaning:"change · transform"}],
+    examples:[{korean:"한국 문화가 좋아요.",english:"I like Korean culture."},{korean:"문화가 달라요.",english:"The culture is different."},{korean:"문화를 이해해요.",english:"I understand the culture."}],
+    related:["역사","사회","시대","언어"] },
+
+  "역사":{ korean:"역사", romanization:"yeok-sa", hanja:"歷史", english:"History", category:"역사 · History",
+    hanja_breakdown:[{char:"歷",korean:"역",meaning:"pass through · experience"},{char:"史",korean:"사",meaning:"history · record"}],
+    examples:[{korean:"역사를 배워요.",english:"I'm learning history."},{korean:"역사는 반복돼요.",english:"History repeats itself."},{korean:"한국 역사예요.",english:"It's Korean history."}],
+    related:["시대","문화","세대"] },
+
+  "세대":{ korean:"세대", romanization:"se-dae", hanja:"世代", english:"Generation", category:"사회 · Society",
+    hanja_breakdown:[{char:"世",korean:"세",meaning:"world · generation"},{char:"代",korean:"대",meaning:"era · substitute"}],
+    examples:[{korean:"다음 세대에게 전해요.",english:"Pass it on to the next generation."},{korean:"세대 차이가 있어요.",english:"There's a generation gap."},{korean:"우리 세대 이야기예요.",english:"It's a story of our generation."}],
+    related:["시대","가족","사회","문화"] },
+
+  "언어":{ korean:"언어", romanization:"eon-eo", hanja:"言語", english:"Language", category:"사회 · Society",
+    hanja_breakdown:[{char:"言",korean:"언",meaning:"speak · word"},{char:"語",korean:"어",meaning:"language · speak"}],
+    examples:[{korean:"한국어를 배워요.",english:"I'm learning Korean."},{korean:"언어가 달라요.",english:"The language is different."},{korean:"언어 능력이 중요해요.",english:"Language skills are important."}],
+    related:["문화","소통","문자"] },
+
+  "소통":{ korean:"소통", romanization:"so-tong", hanja:"疏通", english:"Communication / Connection", category:"사회 · Society",
+    hanja_breakdown:[{char:"疏",korean:"소",meaning:"flow · communicate · loose"},{char:"通",korean:"통",meaning:"pass through · communicate"}],
+    examples:[{korean:"소통이 중요해요.",english:"Communication is important."},{korean:"서로 소통해요.",english:"We communicate with each other."},{korean:"소통이 안 돼요.",english:"We're not communicating well."}],
+    related:["언어","전화","관계","이해"] },
+
+  "이해":{ korean:"이해", romanization:"i-hae", hanja:"理解", english:"Understanding / Comprehension", category:"사회 · Society",
+    hanja_breakdown:[{char:"理",korean:"이",meaning:"reason · manage · logic"},{char:"解",korean:"해",meaning:"solve · understand · undo"}],
+    examples:[{korean:"이해했어요.",english:"I understood."},{korean:"이해가 안 돼요.",english:"I don't understand."},{korean:"서로 이해해요.",english:"We understand each other."}],
+    related:["소통","공부","지식"] },
+
+  // ══════════════════════════════════════
+  //  교육/지식 · Education & Knowledge
+  // ══════════════════════════════════════
+  "공부":{ korean:"공부", romanization:"gong-bu", hanja:"工夫", english:"Study / Learning", category:"교육 · Education",
+    hanja_breakdown:[{char:"工",korean:"공",meaning:"work · craft"},{char:"夫",korean:"부",meaning:"man · husband · work"}],
+    examples:[{korean:"공부해요.",english:"I'm studying."},{korean:"공부가 어려워요.",english:"Studying is difficult."},{korean:"열심히 공부했어요.",english:"I studied hard."}],
+    related:["시험","학교","지식","노력"] },
+
+  "학교":{ korean:"학교", romanization:"hak-gyo", hanja:"學校", english:"School", category:"교육 · Education",
+    hanja_breakdown:[{char:"學",korean:"학",meaning:"learn · study"},{char:"校",korean:"교",meaning:"school · proofread"}],
+    examples:[{korean:"학교에 가요.",english:"I go to school."},{korean:"학교가 재미있어요.",english:"School is fun."},{korean:"학교 친구예요.",english:"They're a school friend."}],
+    related:["공부","시험","선생님","친구"] },
+
+  "시험":{ korean:"시험", romanization:"si-heom", hanja:"試驗", english:"Test / Exam", category:"교육 · Education",
+    hanja_breakdown:[{char:"試",korean:"시",meaning:"try · test"},{char:"驗",korean:"험",meaning:"verify · experience"}],
+    examples:[{korean:"내일 시험이 있어요.",english:"I have a test tomorrow."},{korean:"시험을 잘 봤어요.",english:"I did well on the exam."},{korean:"시험 공부를 해요.",english:"I'm studying for the exam."}],
+    related:["공부","학교","결과"] },
+
+  "지식":{ korean:"지식", romanization:"ji-sik", hanja:"知識", english:"Knowledge", category:"교육 · Education",
+    hanja_breakdown:[{char:"知",korean:"지",meaning:"know · wisdom"},{char:"識",korean:"식",meaning:"know · recognize"}],
+    examples:[{korean:"지식이 힘이에요.",english:"Knowledge is power."},{korean:"지식을 쌓아요.",english:"I'm building knowledge."},{korean:"지식을 나눠요.",english:"I'm sharing knowledge."}],
+    related:["공부","이해","지혜"] },
+
+  "지혜":{ korean:"지혜", romanization:"ji-hye", hanja:"智慧", english:"Wisdom", category:"교육 · Education",
+    hanja_breakdown:[{char:"智",korean:"지",meaning:"wisdom · knowledge"},{char:"慧",korean:"혜",meaning:"wisdom · clever"}],
+    examples:[{korean:"지혜로운 사람이에요.",english:"They're a wise person."},{korean:"경험에서 지혜가 나와요.",english:"Wisdom comes from experience."},{korean:"지혜를 배워요.",english:"I'm learning wisdom."}],
+    related:["지식","경험","나이"] },
+
+  "경험":{ korean:"경험", romanization:"gyeong-heom", hanja:"經驗", english:"Experience", category:"교육 · Education",
+    hanja_breakdown:[{char:"經",korean:"경",meaning:"pass through · manage · classic"},{char:"驗",korean:"험",meaning:"verify · experience"}],
+    examples:[{korean:"경험이 중요해요.",english:"Experience is important."},{korean:"좋은 경험이에요.",english:"It's a good experience."},{korean:"경험에서 배워요.",english:"I learn from experience."}],
+    related:["지혜","기억","성공","노력"] },
+
+  // ══════════════════════════════════════
+  //  시간 · Time
+  // ══════════════════════════════════════
+  "시계":{ korean:"시계", romanization:"si-gye", hanja:"時計", english:"Clock / Watch", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"時",korean:"시",meaning:"time · hour"},{char:"計",korean:"계",meaning:"measure · count"}],
+    examples:[{korean:"시계가 멈췄어요.",english:"The clock stopped."},{korean:"시계를 봐요.",english:"I'm looking at the watch."},{korean:"시계가 빨라요.",english:"The clock is fast."}],
+    related:["시간","시작"] },
+
+  "기간":{ korean:"기간", romanization:"gi-gan", hanja:"期間", english:"Period / Duration", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"期",korean:"기",meaning:"period · term"},{char:"間",korean:"간",meaning:"between · interval"}],
+    examples:[{korean:"기간이 얼마예요?",english:"How long is the period?"},{korean:"세 달 기간이에요.",english:"It's a three-month period."},{korean:"기간을 연장해요.",english:"They extended the period."}],
+    related:["시간","날짜","순간"] },
+
+  "날짜":{ korean:"날짜", romanization:"nal-jja", hanja:null, english:"Date", category:"일상 · Daily Life",
+    hanja_breakdown:[],
+    examples:[{korean:"날짜가 언제예요?",english:"What's the date?"},{korean:"날짜를 정해요.",english:"Let's set a date."},{korean:"날짜를 잊었어요.",english:"I forgot the date."}],
+    related:["시간","기간","약속"] },
+
+  "미래":{ korean:"미래", romanization:"mi-rae", hanja:"未來", english:"Future", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"未",korean:"미",meaning:"not yet · future"},{char:"來",korean:"래",meaning:"come · future"}],
+    examples:[{korean:"미래가 밝아요.",english:"The future is bright."},{korean:"미래를 준비해요.",english:"I'm preparing for the future."},{korean:"미래가 기대돼요.",english:"I'm looking forward to the future."}],
+    related:["시간","희망","꿈","현재"] },
+
+  "현재":{ korean:"현재", romanization:"hyeon-jae", hanja:"現在", english:"Present / Now", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"現",korean:"현",meaning:"appear · present"},{char:"在",korean:"재",meaning:"exist · be present"}],
+    examples:[{korean:"현재 상황이에요.",english:"It's the current situation."},{korean:"현재에 집중해요.",english:"Focus on the present."},{korean:"현재 어디 있어요?",english:"Where are you now?"}],
+    related:["미래","과거","시간"] },
+
+  "과거":{ korean:"과거", romanization:"gwa-geo", hanja:"過去", english:"Past", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"過",korean:"과",meaning:"pass · go beyond"},{char:"去",korean:"거",meaning:"go · leave · past"}],
+    examples:[{korean:"과거를 잊어요.",english:"Forget the past."},{korean:"과거에서 배워요.",english:"Learn from the past."},{korean:"과거가 현재를 만들어요.",english:"The past shapes the present."}],
+    related:["현재","미래","기억","역사"] },
+
+  // ══════════════════════════════════════
+  //  공간/장소 · Space & Place
+  // ══════════════════════════════════════
+  "공간":{ korean:"공간", romanization:"gong-gan", hanja:"空間", english:"Space / Room", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"空",korean:"공",meaning:"empty · sky"},{char:"間",korean:"간",meaning:"between · space"}],
+    examples:[{korean:"공간이 넓어요.",english:"The space is wide."},{korean:"개인 공간이 필요해요.",english:"I need personal space."},{korean:"아늑한 공간이에요.",english:"It's a cozy space."}],
+    related:["방","장소","시간","인간"] },
+
+  "장소":{ korean:"장소", romanization:"jang-so", hanja:"場所", english:"Place / Location", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"場",korean:"장",meaning:"place · field · market"},{char:"所",korean:"소",meaning:"place · location"}],
+    examples:[{korean:"장소가 어디예요?",english:"Where's the location?"},{korean:"좋은 장소예요.",english:"It's a good place."},{korean:"장소를 정해요.",english:"Let's decide on a place."}],
+    related:["공간","방","약속"] },
+
+  "집":{ korean:"집", romanization:"jip", hanja:null, english:"House / Home", category:"일상 · Daily Life",
+    hanja_breakdown:[],
+    examples:[{korean:"집에 가요.",english:"I'm going home."},{korean:"집이 편해요.",english:"Home is comfortable."},{korean:"집에 있어요.",english:"I'm at home."}],
+    related:["가족","방","공간"] },
+
+  "방":{ korean:"방", romanization:"bang", hanja:"房", english:"Room", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"房",korean:"방",meaning:"room · chamber"}],
+    examples:[{korean:"방이 깨끗해요.",english:"The room is clean."},{korean:"내 방이에요.",english:"It's my room."},{korean:"방에서 쉬어요.",english:"I'm resting in my room."}],
+    related:["집","공간","장소"] },
+
+  "중간":{ korean:"중간", romanization:"jung-gan", hanja:"中間", english:"Middle / Halfway", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"中",korean:"중",meaning:"middle · center"},{char:"間",korean:"간",meaning:"between · interval"}],
+    examples:[{korean:"중간에 멈췄어요.",english:"I stopped in the middle."},{korean:"중간 지점이에요.",english:"It's the midpoint."},{korean:"중간 정도예요.",english:"It's about halfway."}],
+    related:["처음","끝","공간"] },
+
+  // ══════════════════════════════════════
+  //  朝·三·暮·四·食 연결 단어
+  // ══════════════════════════════════════
+  "조회":{ korean:"조회", romanization:"jo-hoe", hanja:"朝會", english:"Morning assembly", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"朝",korean:"조",meaning:"morning · dawn"},{char:"會",korean:"회",meaning:"gather · meet"}],
+    examples:[{korean:"아침에 조회가 있어요.",english:"There's a morning assembly."},{korean:"조회 시간이에요.",english:"It's assembly time."},{korean:"조회에서 발표했어요.",english:"I presented at the assembly."}],
+    related:["조식","시간","아침"] },
+
+  "조기":{ korean:"조기", romanization:"jo-gi", hanja:"早期", english:"Early stage / Early on", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"早",korean:"조",meaning:"early · morning"},{char:"期",korean:"기",meaning:"period · term"}],
+    examples:[{korean:"조기 발견이 중요해요.",english:"Early detection is important."},{korean:"조기에 시작했어요.",english:"We started early on."},{korean:"조기 교육이에요.",english:"It's early education."}],
+    related:["시작","기간","시간"] },
+
+  "삼각":{ korean:"삼각", romanization:"sam-gak", hanja:"三角", english:"Triangle", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"三",korean:"삼",meaning:"three"},{char:"角",korean:"각",meaning:"corner · angle"}],
+    examples:[{korean:"삼각형이에요.",english:"It's a triangle."},{korean:"삼각 관계예요.",english:"It's a love triangle."},{korean:"삼각지에서 만나요.",english:"Let's meet at the triangle junction."}],
+    related:["사각","중간"] },
+
+  "삼세번":{ korean:"삼세번", romanization:"sam-se-beon", hanja:null, english:"Third time's the charm", category:"일상 · Daily Life",
+    hanja_breakdown:[],
+    examples:[{korean:"삼세번은 해봐야죠.",english:"You have to try three times."},{korean:"삼세번 만에 성공했어요.",english:"I succeeded on the third try."},{korean:"삼세번이라고 다시 해봐요.",english:"Third time's the charm — try again."}],
+    related:["시작","순간"] },
+
+  "삼일":{ korean:"삼일", romanization:"sam-il", hanja:"三日", english:"Three days", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"三",korean:"삼",meaning:"three"},{char:"日",korean:"일",meaning:"day · sun"}],
+    examples:[{korean:"삼일 후에 만나요.",english:"Let's meet in three days."},{korean:"삼일 동안 쉬었어요.",english:"I rested for three days."},{korean:"삼일절이에요.",english:"It's March 1st Independence Day."}],
+    related:["기간","시간","날짜"] },
+
+  "세모":{ korean:"세모", romanization:"se-mo", hanja:"歲暮", english:"Year-end", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"歲",korean:"세",meaning:"year · age"},{char:"暮",korean:"모",meaning:"evening · end"}],
+    examples:[{korean:"세모가 다가왔어요.",english:"Year-end is approaching."},{korean:"세모에 바빠요.",english:"I'm busy at year-end."},{korean:"세모 분위기예요.",english:"It has a year-end atmosphere."}],
+    related:["세대","시간","기간"] },
+
+  "모경":{ korean:"모경", romanization:"mo-gyeong", hanja:"暮景", english:"Evening scenery", category:"자연 · Nature",
+    hanja_breakdown:[{char:"暮",korean:"모",meaning:"evening · dusk"},{char:"景",korean:"경",meaning:"scenery · view"}],
+    examples:[{korean:"모경이 아름다워요.",english:"The evening scenery is beautiful."},{korean:"강변 모경을 봤어요.",english:"I saw the twilight scene by the river."},{korean:"모경에 물들었어요.",english:"It was bathed in twilight glow."}],
+    related:["순간","감정"] },
+
+  "사계":{ korean:"사계", romanization:"sa-gye", hanja:"四季", english:"Four seasons", category:"자연 · Nature",
+    hanja_breakdown:[{char:"四",korean:"사",meaning:"four"},{char:"季",korean:"계",meaning:"season"}],
+    examples:[{korean:"한국은 사계가 뚜렷해요.",english:"Korea has four distinct seasons."},{korean:"사계절 모두 좋아요.",english:"I like all four seasons."},{korean:"사계의 변화가 아름다워요.",english:"The change of the four seasons is beautiful."}],
+    related:["계절","문화","시간"] },
+
+  "사방":{ korean:"사방", romanization:"sa-bang", hanja:"四方", english:"All directions / Everywhere", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"四",korean:"사",meaning:"four"},{char:"方",korean:"방",meaning:"direction · side"}],
+    examples:[{korean:"사방이 산으로 둘러싸여 있어요.",english:"It's surrounded by mountains on all sides."},{korean:"사방을 둘러봤어요.",english:"I looked around in all directions."},{korean:"소문이 사방으로 퍼졌어요.",english:"The rumor spread everywhere."}],
+    related:["공간","중간"] },
+
+  "사각":{ korean:"사각", romanization:"sa-gak", hanja:"四角", english:"Square / Four-cornered", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"四",korean:"사",meaning:"four"},{char:"角",korean:"각",meaning:"corner · angle"}],
+    examples:[{korean:"사각형이에요.",english:"It's a square."},{korean:"사각 지대예요.",english:"It's a blind spot."},{korean:"사각 팬티예요.",english:"They're boxer shorts."}],
+    related:["삼각","공간"] },
+
+  "시대":{ korean:"시대", romanization:"si-dae", hanja:"時代", english:"Era / Age / Period", category:"역사 · History",
+    hanja_breakdown:[{char:"時",korean:"시",meaning:"time · hour"},{char:"代",korean:"대",meaning:"generation · era"}],
+    examples:[{korean:"조선 시대예요.",english:"It's the Joseon era."},{korean:"현대 시대에 살아요.",english:"We live in the modern age."},{korean:"그 시대는 달랐어요.",english:"That era was different."}],
+    related:["역사","문화","세대","시간"] },
+
+  "당시":{ korean:"당시", romanization:"dang-si", hanja:"當時", english:"At that time / Back then", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"當",korean:"당",meaning:"correspond · at the time"},{char:"時",korean:"시",meaning:"time · moment"}],
+    examples:[{korean:"당시에는 몰랐어요.",english:"I didn't know at that time."},{korean:"당시 상황이 달랐어요.",english:"The situation back then was different."},{korean:"당시를 기억해요.",english:"I remember that time."}],
+    related:["그때","지금","기억"] },
+
+  "임시":{ korean:"임시", romanization:"im-si", hanja:"臨時", english:"Temporary / Provisional", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"臨",korean:"임",meaning:"face · temporary"},{char:"時",korean:"시",meaning:"time · moment"}],
+    examples:[{korean:"임시 방편이에요.",english:"It's a temporary measure."},{korean:"임시로 써요.",english:"I'm using it temporarily."},{korean:"임시 직원이에요.",english:"They're a temporary employee."}],
+    related:["잠깐","시간"] }
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  STUDY LIST — main flashcard order
+// ═══════════════════════════════════════════════════════════════
+const STUDY_LIST = [
+  "시간","가족","행복","사랑","사람","기억","감정","순간",
+  "세대","역사","문화","계절","자연","건강","운동","노력",
+  "성공","친구","우정","사회","언어","공부","지식","미래"
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  HANJA DATABASE
+// ═══════════════════════════════════════════════════════════════
+const HANJA_DB = {
+  "時":{char:"時",korean:"시",meaning:"time · hour",note:"Used in words about time and moments",words:["시간","시작","시대","시험","당시","임시","시계"]},
+  "間":{char:"間",korean:"간",meaning:"between · interval · space",note:"Used in words about spaces and intervals",words:["시간","공간","인간","기간","중간","순간"]},
+  "始":{char:"始",korean:"시",meaning:"begin · start",note:"Words about beginnings",words:["시작"]},
+  "作":{char:"作",korean:"작",meaning:"make · create",note:"Words about making things",words:["시작"]},
+  "代":{char:"代",korean:"대",meaning:"generation · era",note:"Words about time periods",words:["시대","세대"]},
+  "空":{char:"空",korean:"공",meaning:"empty · sky",note:"Words about emptiness and sky",words:["공간"]},
+  "人":{char:"人",korean:"인",meaning:"person · human",note:"Words about people",words:["인간"]},
+  "中":{char:"中",korean:"중",meaning:"middle · center",note:"Words about the middle",words:["중간"]},
+  "瞬":{char:"瞬",korean:"순",meaning:"blink · instant",note:"Words about brief moments",words:["순간"]},
+  "世":{char:"世",korean:"세",meaning:"world · generation",note:"Words about the world",words:["세대"]},
+  "記":{char:"記",korean:"기",meaning:"record · remember",note:"Words about recording",words:["기억"]},
+  "憶":{char:"憶",korean:"억",meaning:"recollect · think of",note:"Words about memory",words:["기억","추억"]},
+  "感":{char:"感",korean:"감",meaning:"feel · sense",note:"Words about feelings",words:["감정"]},
+  "情":{char:"情",korean:"정",meaning:"feeling · affection",note:"Words about emotions",words:["감정","우정"]},
+  "家":{char:"家",korean:"가",meaning:"house · home · family",note:"Words about home and family",words:["가족"]},
+  "族":{char:"族",korean:"족",meaning:"clan · tribe · group",note:"Words about groups of people",words:["가족"]},
+  "幸":{char:"幸",korean:"행",meaning:"fortune · luck",note:"Words about good fortune",words:["행복"]},
+  "福":{char:"福",korean:"복",meaning:"blessing · good fortune",note:"Words about blessings",words:["행복"]},
+  "計":{char:"計",korean:"계",meaning:"measure · count",note:"Words about measuring",words:["시계"]},
+  "歷":{char:"歷",korean:"역",meaning:"pass through · experience",note:"Words about experience",words:["역사","경험"]},
+  "史":{char:"史",korean:"사",meaning:"history · record",note:"Words about records",words:["역사"]},
+  "文":{char:"文",korean:"문",meaning:"writing · culture",note:"Words about culture and writing",words:["문화","문자"]},
+  "化":{char:"化",korean:"화",meaning:"change · transform",note:"Words about change",words:["문화","변화"]},
+  "朝":{char:"朝",korean:"조",meaning:"morning · dynasty",note:"Words about morning and time",words:["조식","조회","조기"]},
+  "三":{char:"三",korean:"삼",meaning:"three",note:"Words using the number three",words:["삼각","삼세번","삼일"]},
+  "暮":{char:"暮",korean:"모",meaning:"evening · dusk · end",note:"Words about evening and endings",words:["세모","모경"]},
+  "四":{char:"四",korean:"사",meaning:"four",note:"Words using the number four",words:["사계","사방","사각"]},
+  "食":{char:"食",korean:"식",meaning:"eat · food",note:"Words about eating and food",words:["조식","식사","식당","식품","음식","급식"]},
+  "飮":{char:"飮",korean:"음",meaning:"drink · consume",note:"Words about drinking and consuming",words:["음식"]},
+  "堂":{char:"堂",korean:"당",meaning:"hall · building",note:"Words about buildings and halls",words:["식당"]},
+  "品":{char:"品",korean:"품",meaning:"product · quality",note:"Words about products and quality",words:["식품"]},
+  "給":{char:"給",korean:"급",meaning:"supply · provide",note:"Words about supplying and providing",words:["급식"]},
+  "事":{char:"事",korean:"사",meaning:"matter · affair · work",note:"Words about matters and work",words:["식사"]},
+  "角":{char:"角",korean:"각",meaning:"corner · angle",note:"Words about corners and angles",words:["삼각","사각"]},
+  "季":{char:"季",korean:"계",meaning:"season · end of period",note:"Words about seasons",words:["계절","사계"]},
+  "節":{char:"節",korean:"절",meaning:"season · occasion",note:"Words about occasions",words:["계절"]},
+  "父":{char:"父",korean:"부",meaning:"father",note:"Words about fathers and family",words:["부모"]},
+  "母":{char:"母",korean:"모",meaning:"mother",note:"Words about mothers and family",words:["부모"]},
+  "兄":{char:"兄",korean:"형",meaning:"older brother",note:"Words about siblings",words:["형제"]},
+  "弟":{char:"弟",korean:"제",meaning:"younger brother",note:"Words about siblings",words:["형제"]},
+  "親":{char:"親",korean:"친",meaning:"close · intimate · parent",note:"Words about closeness",words:["친구"]},
+  "友":{char:"友",korean:"우",meaning:"friend",note:"Words about friendship",words:["우정"]},
+  "信":{char:"信",korean:"신",meaning:"trust · believe",note:"Words about trust and belief",words:["신뢰"]},
+  "學":{char:"學",korean:"학",meaning:"learn · study",note:"Words about learning",words:["학교","공부"]},
+  "校":{char:"校",korean:"교",meaning:"school",note:"Words about schools",words:["학교"]},
+  "知":{char:"知",korean:"지",meaning:"know · wisdom",note:"Words about knowledge",words:["지식","지혜"]},
+  "識":{char:"識",korean:"식",meaning:"know · recognize",note:"Words about recognition",words:["지식"]},
+  "自":{char:"自",korean:"자",meaning:"self · natural",note:"Words about the self and nature",words:["자연"]},
+  "然":{char:"然",korean:"연",meaning:"natural · so",note:"Words about nature",words:["자연"]},
+  "社":{char:"社",korean:"사",meaning:"society · company",note:"Words about society",words:["사회"]},
+  "會":{char:"會",korean:"회",meaning:"gather · meet",note:"Words about gathering",words:["사회","조회"]},
+  "言":{char:"言",korean:"언",meaning:"speak · word",note:"Words about speaking",words:["언어"]},
+  "語":{char:"語",korean:"어",meaning:"language · speak",note:"Words about language",words:["언어"]},
+  "未":{char:"未",korean:"미",meaning:"not yet · future",note:"Words about the future",words:["미래"]},
+  "來":{char:"來",korean:"래",meaning:"come · future",note:"Words about coming and future",words:["미래"]},
+  "現":{char:"現",korean:"현",meaning:"appear · present",note:"Words about the present",words:["현재"]},
+  "過":{char:"過",korean:"과",meaning:"pass · go beyond",note:"Words about passing",words:["과거"]},
+  "追":{char:"追",korean:"추",meaning:"pursue · recall",note:"Words about chasing and recalling",words:["추억"]},
+  "健":{char:"健",korean:"건",meaning:"healthy · strong",note:"Words about health",words:["건강"]},
+  "康":{char:"康",korean:"강",meaning:"peaceful · healthy",note:"Words about well-being",words:["건강"]},
+  "運":{char:"運",korean:"운",meaning:"move · transport · luck",note:"Words about movement and luck",words:["운동"]},
+  "動":{char:"動",korean:"동",meaning:"move · action",note:"Words about movement",words:["운동"]},
+  "成":{char:"成",korean:"성",meaning:"achieve · become",note:"Words about achievement",words:["성공"]},
+  "功":{char:"功",korean:"공",meaning:"achievement · merit",note:"Words about merit",words:["성공"]},
+  "努":{char:"努",korean:"노",meaning:"strive · exert",note:"Words about effort",words:["노력"]},
+  "力":{char:"力",korean:"력",meaning:"power · strength",note:"Words about strength",words:["노력"]},
+  "結":{char:"結",korean:"결",meaning:"tie · conclude",note:"Words about conclusions",words:["결과"]},
+  "果":{char:"果",korean:"과",meaning:"fruit · result",note:"Words about results",words:["결과"]},
+  "電":{char:"電",korean:"전",meaning:"electricity · lightning",note:"Words about electricity",words:["전화"]},
+  "話":{char:"話",korean:"화",meaning:"talk · speech",note:"Words about talking",words:["전화"]},
+  "字":{char:"字",korean:"자",meaning:"character · letter",note:"Words about characters",words:["문자"]},
+  "料":{char:"料",korean:"료",meaning:"material · measure",note:"Words about materials",words:["요리","재료"]},
+  "理":{char:"理",korean:"리",meaning:"reason · manage · logic",note:"Words about reason and logic",words:["요리","이해"]},
+  "材":{char:"材",korean:"재",meaning:"material · timber",note:"Words about materials",words:["재료"]},
+  "環":{char:"環",korean:"환",meaning:"ring · surround",note:"Words about surroundings",words:["환경"]},
+  "境":{char:"境",korean:"경",meaning:"boundary · environment",note:"Words about boundaries",words:["환경"]},
+  "場":{char:"場",korean:"장",meaning:"place · field",note:"Words about places",words:["장소"]},
+  "所":{char:"所",korean:"소",meaning:"place · location",note:"Words about locations",words:["장소"]},
+  "工":{char:"工",korean:"공",meaning:"work · craft",note:"Words about work and craft",words:["공부"]},
+  "約":{char:"約",korean:"약",meaning:"promise · approximately",note:"Words about promises",words:["약속"]},
+  "束":{char:"束",korean:"속",meaning:"bind · bundle",note:"Words about binding",words:["약속"]}
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  IDIOMS DATABASE
+// ═══════════════════════════════════════════════════════════════
+const IDIOMS = {
+  "조삼모사":{
+    korean:"조삼모사",hanja:"朝三暮四",romanization:"jo-sam-mo-sa",
+    english:"Being fooled by superficial changes",
+    literal:"Morning three, evening four",situation:"🎭 Tricks & Deception",
+    chars:[{char:"朝",korean:"조",meaning:"morning · dawn"},{char:"三",korean:"삼",meaning:"three"},{char:"暮",korean:"모",meaning:"evening · dusk"},{char:"四",korean:"사",meaning:"four"}],
+    origin:"A man in Song Dynasty China kept monkeys. He said he'd give them 3 acorns in the morning and 4 at night — they were furious. He switched to 4 in the morning and 3 at night — they were delighted. The total was the same. Used to describe being tricked by trivial differences.",
+    examples:[
+      {korean:"월급은 같은데 지급 방식만 바꿨어요. 조삼모사네요.",english:"The salary is the same, just the payment method changed. Classic 조삼모사."},
+      {korean:"할인처럼 보이지만 원래 가격이에요. 완전 조삼모사잖아요.",english:"It looks like a discount but it's the original price. Total 조삼모사."},
+      {korean:"말만 바꿨지 결과는 똑같아요. 조삼모사예요.",english:"They just changed the wording, the result is the same."}
+    ],related_idioms:["오리무중"],related_words:[]},
+
+  "새옹지마":{
+    korean:"새옹지마",hanja:"塞翁之馬",romanization:"sae-ong-ji-ma",
+    english:"Every cloud has a silver lining",
+    literal:"The old man of the frontier's horse",situation:"🌿 Life & Wisdom",
+    chars:[{char:"塞",korean:"새",meaning:"frontier · border"},{char:"翁",korean:"옹",meaning:"old man · elder"},{char:"之",korean:"지",meaning:"of · possessive"},{char:"馬",korean:"마",meaning:"horse"}],
+    origin:"An old man lost his horse — neighbors pitied him. The horse returned with a wild horse. His son broke his leg riding it. Then war came and all able-bodied men died, but his son survived. Good and bad fortune are unpredictable.",
+    examples:[
+      {korean:"실직했지만 더 좋은 기회가 생겼어요. 새옹지마예요.",english:"I lost my job but a better opportunity came. That's 새옹지마."},
+      {korean:"인생은 새옹지마라고 너무 슬퍼하지 마세요.",english:"Life is 새옹지마, so don't be too sad."},
+      {korean:"그 사고가 오히려 행운이었어요. 새옹지마네요.",english:"That accident was actually lucky. 새옹지마 indeed."}
+    ],related_idioms:["유비무환","설상가상"],related_words:["행복","기억"]},
+
+  "유비무환":{
+    korean:"유비무환",hanja:"有備無患",romanization:"yu-bi-mu-hwan",
+    english:"Preparedness prevents disaster",
+    literal:"Having preparation means no worry",situation:"🌿 Life & Wisdom",
+    chars:[{char:"有",korean:"유",meaning:"have · exist"},{char:"備",korean:"비",meaning:"prepare · ready"},{char:"無",korean:"무",meaning:"nothing · without"},{char:"患",korean:"환",meaning:"worry · disaster"}],
+    origin:"From ancient Chinese classic 書經. A ruler was advised: 'If you are always prepared, you will have no disasters.' Similar to 'An ounce of prevention is worth a pound of cure.'",
+    examples:[
+      {korean:"우산을 항상 가지고 다녀요. 유비무환이잖아요.",english:"I always carry an umbrella. That's 유비무환."},
+      {korean:"유비무환이라고 미리 저축해 두세요.",english:"As they say, 유비무환 — save money in advance."},
+      {korean:"비상약을 챙겨요. 유비무환이에요.",english:"Pack emergency medicine. 유비무환."}
+    ],related_idioms:["새옹지마"],related_words:["시간","기간"]},
+
+  "백년해로":{
+    korean:"백년해로",hanja:"百年偕老",romanization:"baek-nyeon-hae-ro",
+    english:"To grow old together for a hundred years",
+    literal:"A hundred years, growing old together",situation:"💕 Love & Relationships",
+    chars:[{char:"百",korean:"백",meaning:"hundred"},{char:"年",korean:"년",meaning:"year"},{char:"偕",korean:"해",meaning:"together · side by side"},{char:"老",korean:"로",meaning:"old · aged"}],
+    origin:"A traditional Korean blessing for newlyweds. The wish that a couple will live harmoniously together until they are old. Often said at weddings.",
+    examples:[
+      {korean:"결혼을 축하해요! 백년해로하세요.",english:"Congratulations on your wedding! May you grow old together."},
+      {korean:"우리 백년해로하자.",english:"Let's grow old together."},
+      {korean:"두 분이 백년해로하실 것 같아요.",english:"You two look like you'll grow old together."}
+    ],related_idioms:["이심전심"],related_words:["사랑","가족","행복"]},
+
+  "이심전심":{
+    korean:"이심전심",hanja:"以心傳心",romanization:"i-sim-jeon-sim",
+    english:"Heart to heart understanding without words",
+    literal:"Transmitting heart through heart",situation:"💕 Love & Relationships",
+    chars:[{char:"以",korean:"이",meaning:"by means of · using"},{char:"心",korean:"심",meaning:"heart · mind"},{char:"傳",korean:"전",meaning:"transmit · pass on"},{char:"心",korean:"심",meaning:"heart · mind"}],
+    origin:"Originally a Buddhist term — the Buddha transmitted enlightenment to his disciple without words, just through a silent smile at a flower. Now used for deep mutual understanding between people who don't need words.",
+    examples:[
+      {korean:"말 안 해도 알아요. 이심전심이에요.",english:"I know without being told. That's 이심전심."},
+      {korean:"우리는 이심전심이라 눈빛만 봐도 알아요.",english:"We have 이심전심 — just one look and we understand."},
+      {korean:"오랜 친구라 이심전심으로 통해요.",english:"We've been friends so long, we have 이심전심."}
+    ],related_idioms:["백년해로"],related_words:["감정","사랑","기억"]},
+
+  "형설지공":{
+    korean:"형설지공",hanja:"螢雪之功",romanization:"hyeong-seol-ji-gong",
+    english:"Achievement through hardship and perseverance",
+    literal:"The achievement of firefly and snow light",situation:"💪 Effort & Success",
+    chars:[{char:"螢",korean:"형",meaning:"firefly"},{char:"雪",korean:"설",meaning:"snow"},{char:"之",korean:"지",meaning:"of · possessive"},{char:"功",korean:"공",meaning:"achievement · merit"}],
+    origin:"Two stories: Car Yin was too poor for lamp oil so he studied by firefly light. Sun Kang studied by reflecting moonlight off snow. Both achieved great success despite poverty.",
+    examples:[
+      {korean:"형설지공으로 드디어 합격했어요.",english:"Through 형설지공, I finally passed."},
+      {korean:"그의 성공은 형설지공의 결과예요.",english:"His success is the result of 형설지공."},
+      {korean:"형설지공 정신으로 공부했어요.",english:"I studied with the spirit of 형설지공."}
+    ],related_idioms:["우공이산"],related_words:["공부","시험","노력"]},
+
+  "우공이산":{
+    korean:"우공이산",hanja:"愚公移山",romanization:"u-gong-i-san",
+    english:"Persistence can move mountains",
+    literal:"The foolish old man moves the mountain",situation:"💪 Effort & Success",
+    chars:[{char:"愚",korean:"우",meaning:"foolish · stupid"},{char:"公",korean:"공",meaning:"public · honorific"},{char:"移",korean:"이",meaning:"move · shift"},{char:"山",korean:"산",meaning:"mountain"}],
+    origin:"An old man blocked by two huge mountains decided to dig them away. When mocked, he said his sons and grandsons would continue. God was moved by his determination and moved the mountains.",
+    examples:[
+      {korean:"우공이산이라고 매일 조금씩 하다 보면 돼요.",english:"Like 우공이산, doing a little every day will get you there."},
+      {korean:"포기하지 마세요. 우공이산 정신이에요.",english:"Don't give up. That's the spirit of 우공이산."},
+      {korean:"우공이산처럼 꾸준히 노력했어요.",english:"I worked steadily like 우공이산."}
+    ],related_idioms:["형설지공"],related_words:["노력","성공","시작"]},
+
+  "오리무중":{
+    korean:"오리무중",hanja:"五里霧中",romanization:"o-ri-mu-jung",
+    english:"Completely lost / In a total fog",
+    literal:"Inside a five-ri fog",situation:"🎭 Daily Situations",
+    chars:[{char:"五",korean:"오",meaning:"five"},{char:"里",korean:"리",meaning:"ri (unit of distance)"},{char:"霧",korean:"무",meaning:"fog · mist"},{char:"中",korean:"중",meaning:"middle · inside"}],
+    origin:"A Taoist master could create a five-ri thick fog making it impossible to find direction. Used when you have absolutely no clue what is happening.",
+    examples:[
+      {korean:"그 사람 요즘 어디 있는지 오리무중이에요.",english:"Where that person is these days is a complete mystery."},
+      {korean:"회의 결과가 오리무중이에요.",english:"The result of the meeting is totally up in the air."},
+      {korean:"범인이 누군지 아직 오리무중이에요.",english:"Who the culprit is still remains a complete fog."}
+    ],related_idioms:["조삼모사"],related_words:["중간","시간"]},
+
+  "설상가상":{
+    korean:"설상가상",hanja:"雪上加霜",romanization:"seol-sang-ga-sang",
+    english:"Adding insult to injury / From bad to worse",
+    literal:"Adding frost on top of snow",situation:"🎭 Daily Situations",
+    chars:[{char:"雪",korean:"설",meaning:"snow"},{char:"上",korean:"상",meaning:"above · on top"},{char:"加",korean:"가",meaning:"add · plus"},{char:"霜",korean:"상",meaning:"frost"}],
+    origin:"Snow is already cold and difficult, but then frost is added on top. Used when bad things keep piling up, making a difficult situation even worse. Like 'When it rains, it pours.'",
+    examples:[
+      {korean:"차가 고장났는데 설상가상으로 비까지 와요.",english:"My car broke down and to make it worse, it's raining."},
+      {korean:"설상가상으로 지갑도 잃어버렸어요.",english:"To top it all off, I lost my wallet too."},
+      {korean:"요즘 설상가상으로 일이 쌓이네요.",english:"Lately things keep piling up, one after another."}
+    ],related_idioms:["새옹지마"],related_words:["감정","기억"]}
+};
+
+
+
+
+  "시작":{ korean:"시작", romanization:"si-jak", hanja:"始作", english:"Beginning / Start", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"始",korean:"시",meaning:"begin · start"},{char:"作",korean:"작",meaning:"make · create"}],
+    examples:[{korean:"시작이 반이에요.",english:"Starting is half the battle."},{korean:"언제 시작해요?",english:"When does it start?"},{korean:"새로운 시작이에요.",english:"It's a new beginning."}],
+    related:["끝","처음","시간"] },
+
+  "시대":{ korean:"시대", romanization:"si-dae", hanja:"時代", english:"Era / Age / Period", category:"역사 · History",
+    hanja_breakdown:[{char:"時",korean:"시",meaning:"time · hour"},{char:"代",korean:"대",meaning:"generation · era"}],
+    examples:[{korean:"조선 시대예요.",english:"It's the Joseon era."},{korean:"현대 시대에 살아요.",english:"We live in the modern age."},{korean:"그 시대는 달랐어요.",english:"That era was different."}],
+    related:["역사","문화","세대","시간"] },
+
+  "시험":{ korean:"시험", romanization:"si-heom", hanja:"試驗", english:"Test / Exam", category:"교육 · Education",
+    hanja_breakdown:[{char:"試",korean:"시",meaning:"try · test"},{char:"驗",korean:"험",meaning:"verify · experience"}],
+    examples:[{korean:"내일 시험이 있어요.",english:"I have a test tomorrow."},{korean:"시험을 잘 봤어요.",english:"I did well on the exam."},{korean:"시험 공부를 해요.",english:"I'm studying for the exam."}],
+    related:["공부","학교","결과"] },
+
+  "당시":{ korean:"당시", romanization:"dang-si", hanja:"當時", english:"At that time / Back then", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"當",korean:"당",meaning:"correspond · at the time"},{char:"時",korean:"시",meaning:"time · moment"}],
+    examples:[{korean:"당시에는 몰랐어요.",english:"I didn't know at that time."},{korean:"당시 상황이 달랐어요.",english:"The situation back then was different."},{korean:"당시를 기억해요.",english:"I remember that time."}],
+    related:["그때","지금","기억"] },
+
+  "임시":{ korean:"임시", romanization:"im-si", hanja:"臨時", english:"Temporary / Provisional", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"臨",korean:"임",meaning:"face · temporary"},{char:"時",korean:"시",meaning:"time · moment"}],
+    examples:[{korean:"임시 방편이에요.",english:"It's a temporary measure."},{korean:"임시로 써요.",english:"I'm using it temporarily."},{korean:"임시 직원이에요.",english:"They're a temporary employee."}],
+    related:["잠깐","시간"] },
+
+  "공간":{ korean:"공간", romanization:"gong-gan", hanja:"空間", english:"Space / Room", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"空",korean:"공",meaning:"empty · sky"},{char:"間",korean:"간",meaning:"between · space"}],
+    examples:[{korean:"공간이 넓어요.",english:"The space is wide."},{korean:"개인 공간이 필요해요.",english:"I need personal space."},{korean:"아늑한 공간이에요.",english:"It's a cozy space."}],
+    related:["방","장소","인간"] },
+
+  "인간":{ korean:"인간", romanization:"in-gan", hanja:"人間", english:"Human Being / Mankind", category:"철학 · Philosophy",
+    hanja_breakdown:[{char:"人",korean:"인",meaning:"person · human"},{char:"間",korean:"간",meaning:"between · among"}],
+    examples:[{korean:"인간은 사회적 동물이에요.",english:"Humans are social animals."},{korean:"인간의 본성이에요.",english:"It's human nature."},{korean:"인간답게 살아요.",english:"Live like a human."}],
+    related:["사람","동물","사회","공간"] },
+
+  "기간":{ korean:"기간", romanization:"gi-gan", hanja:"期間", english:"Period / Duration", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"期",korean:"기",meaning:"period · term"},{char:"間",korean:"간",meaning:"between · interval"}],
+    examples:[{korean:"기간이 얼마예요?",english:"How long is the period?"},{korean:"세 달 기간이에요.",english:"It's a three-month period."},{korean:"기간을 연장해요.",english:"They extended the period."}],
+    related:["시간","날짜","순간"] },
+
+  "중간":{ korean:"중간", romanization:"jung-gan", hanja:"中間", english:"Middle / Halfway", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"中",korean:"중",meaning:"middle · center"},{char:"間",korean:"간",meaning:"between · interval"}],
+    examples:[{korean:"중간에 멈췄어요.",english:"I stopped in the middle."},{korean:"중간 지점이에요.",english:"It's the midpoint."},{korean:"중간 정도예요.",english:"It's about halfway."}],
+    related:["처음","끝","공간"] },
+
+  "순간":{ korean:"순간", romanization:"sun-gan", hanja:"瞬間", english:"Moment / Instant", category:"감정 · Emotion",
+    hanja_breakdown:[{char:"瞬",korean:"순",meaning:"blink · instant"},{char:"間",korean:"간",meaning:"between · interval"}],
+    examples:[{korean:"그 순간을 잊을 수 없어요.",english:"I can't forget that moment."},{korean:"순간적으로 결정했어요.",english:"I decided in an instant."},{korean:"아름다운 순간이에요.",english:"It's a beautiful moment."}],
+    related:["시간","기억","감정","기간"] },
+
+  "세대":{ korean:"세대", romanization:"se-dae", hanja:"世代", english:"Generation", category:"사회 · Society",
+    hanja_breakdown:[{char:"世",korean:"세",meaning:"world · generation"},{char:"代",korean:"대",meaning:"era · substitute"}],
+    examples:[{korean:"다음 세대에게 전해요.",english:"Pass it on to the next generation."},{korean:"세대 차이가 있어요.",english:"There's a generation gap."},{korean:"우리 세대 이야기예요.",english:"It's a story of our generation."}],
+    related:["시대","가족","사회","문화"] },
+
+  "기억":{ korean:"기억", romanization:"gi-eok", hanja:"記憶", english:"Memory / Recollection", category:"감정 · Emotion",
+    hanja_breakdown:[{char:"記",korean:"기",meaning:"record · remember"},{char:"憶",korean:"억",meaning:"recollect · think of"}],
+    examples:[{korean:"그 기억이 소중해요.",english:"That memory is precious."},{korean:"기억이 안 나요.",english:"I can't remember."},{korean:"좋은 기억을 만들어요.",english:"Let's make good memories."}],
+    related:["순간","감정","당시","추억"] },
+
+  "감정":{ korean:"감정", romanization:"gam-jeong", hanja:"感情", english:"Emotion / Feeling", category:"감정 · Emotion",
+    hanja_breakdown:[{char:"感",korean:"감",meaning:"feel · sense"},{char:"情",korean:"정",meaning:"feeling · affection"}],
+    examples:[{korean:"감정을 표현해요.",english:"Express your emotions."},{korean:"복잡한 감정이에요.",english:"It's a complex feeling."},{korean:"감정이 풍부해요.",english:"She's very emotional."}],
+    related:["기억","사랑","행복","기분"] },
+
+  "사람":{ korean:"사람", romanization:"sa-ram", hanja:null, english:"Person / People", category:"일상 · Daily Life",
+    hanja_breakdown:[],
+    examples:[{korean:"좋은 사람이에요.",english:"They're a good person."},{korean:"많은 사람들이 있어요.",english:"There are many people."},{korean:"어떤 사람이에요?",english:"What kind of person are they?"}],
+    related:["인간","가족","친구","사회"] },
+
+  "가족":{ korean:"가족", romanization:"ga-jok", hanja:"家族", english:"Family", category:"가족 · Family",
+    hanja_breakdown:[{char:"家",korean:"가",meaning:"house · home · family"},{char:"族",korean:"족",meaning:"clan · tribe · group"}],
+    examples:[{korean:"가족이 소중해요.",english:"Family is precious."},{korean:"가족과 함께해요.",english:"I'm with my family."},{korean:"우리 가족은 다섯 명이에요.",english:"My family has five members."}],
+    related:["사람","세대","사랑"] },
+
+  "행복":{ korean:"행복", romanization:"haeng-bok", hanja:"幸福", english:"Happiness", category:"감정 · Emotion",
+    hanja_breakdown:[{char:"幸",korean:"행",meaning:"fortune · luck"},{char:"福",korean:"복",meaning:"blessing · good fortune"}],
+    examples:[{korean:"행복해요.",english:"I'm happy."},{korean:"행복을 찾아요.",english:"I'm looking for happiness."},{korean:"작은 것에서 행복을 느껴요.",english:"I find happiness in small things."}],
+    related:["감정","사랑","가족"] },
+
+  "사랑":{ korean:"사랑", romanization:"sa-rang", hanja:null, english:"Love", category:"감정 · Emotion",
+    hanja_breakdown:[],
+    examples:[{korean:"사랑해요.",english:"I love you."},{korean:"사랑이 넘쳐요.",english:"It's overflowing with love."},{korean:"진정한 사랑이에요.",english:"It's true love."}],
+    related:["감정","행복","가족"] },
+
+  "시계":{ korean:"시계", romanization:"si-gye", hanja:"時計", english:"Clock / Watch", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"時",korean:"시",meaning:"time · hour"},{char:"計",korean:"계",meaning:"measure · count"}],
+    examples:[{korean:"시계가 멈췄어요.",english:"The clock stopped."},{korean:"시계를 봐요.",english:"I'm looking at the watch."},{korean:"시계가 빨라요.",english:"The clock is fast."}],
+    related:["시간","시작"] },
+
+  "역사":{ korean:"역사", romanization:"yeok-sa", hanja:"歷史", english:"History", category:"역사 · History",
+    hanja_breakdown:[{char:"歷",korean:"역",meaning:"pass through · experience"},{char:"史",korean:"사",meaning:"history · record"}],
+    examples:[{korean:"역사를 배워요.",english:"I'm learning history."},{korean:"역사는 반복돼요.",english:"History repeats itself."},{korean:"한국 역사예요.",english:"It's Korean history."}],
+    related:["시대","문화","세대"] },
+
+  "문화":{ korean:"문화", romanization:"mun-hwa", hanja:"文化", english:"Culture", category:"사회 · Society",
+    hanja_breakdown:[{char:"文",korean:"문",meaning:"writing · culture"},{char:"化",korean:"화",meaning:"change · transform"}],
+    examples:[{korean:"한국 문화가 좋아요.",english:"I like Korean culture."},{korean:"문화가 달라요.",english:"The culture is different."},{korean:"문화를 이해해요.",english:"I understand the culture."}],
+    related:["역사","사회","시대","언어"] },
+
+  // ── 朝 (조) 관련 단어 ──
+  "조식":{ korean:"조식", romanization:"jo-sik", hanja:"朝食", english:"Breakfast", category:"음식 · Food",
+    hanja_breakdown:[{char:"朝",korean:"조",meaning:"morning · dawn"},{char:"食",korean:"식",meaning:"eat · food"}],
+    examples:[{korean:"조식이 포함돼요.",english:"Breakfast is included."},{korean:"조식을 먹었어요?",english:"Did you have breakfast?"},{korean:"조식 뷔페예요.",english:"It's a breakfast buffet."}],
+    related:["조회","아침","식사"] },
+
+  "조회":{ korean:"조회", romanization:"jo-hoe", hanja:"朝會", english:"Morning assembly / Morning meeting", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"朝",korean:"조",meaning:"morning · dawn"},{char:"會",korean:"회",meaning:"gather · meet"}],
+    examples:[{korean:"아침에 조회가 있어요.",english:"There's a morning assembly."},{korean:"조회 시간이에요.",english:"It's assembly time."},{korean:"조회에서 발표했어요.",english:"I presented at the morning assembly."}],
+    related:["조식","시간","아침"] },
+
+  "조기":{ korean:"조기", romanization:"jo-gi", hanja:"早期", english:"Early stage / Early on", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"早",korean:"조",meaning:"early · morning"},{char:"期",korean:"기",meaning:"period · term"}],
+    examples:[{korean:"조기 발견이 중요해요.",english:"Early detection is important."},{korean:"조기에 시작했어요.",english:"We started early on."},{korean:"조기 교육이에요.",english:"It's early education."}],
+    related:["시작","기간","시간"] },
+
+  // ── 三 (삼) 관련 단어 ──
+  "삼각":{ korean:"삼각", romanization:"sam-gak", hanja:"三角", english:"Triangle / Three-cornered", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"三",korean:"삼",meaning:"three"},{char:"角",korean:"각",meaning:"corner · angle"}],
+    examples:[{korean:"삼각형이에요.",english:"It's a triangle."},{korean:"삼각 관계예요.",english:"It's a love triangle."},{korean:"삼각지에서 만나요.",english:"Let's meet at the triangle junction."}],
+    related:["사각","중간"] },
+
+  "삼세번":{ korean:"삼세번", romanization:"sam-se-beon", hanja:null, english:"Three times / Third time's the charm", category:"일상 · Daily Life",
+    hanja_breakdown:[],
+    examples:[{korean:"삼세번은 해봐야죠.",english:"You have to try three times."},{korean:"삼세번 만에 성공했어요.",english:"I succeeded on the third try."},{korean:"삼세번이라고 다시 해봐요.",english:"They say third time's the charm — try again."}],
+    related:["시작","순간"] },
+
+  "삼일":{ korean:"삼일", romanization:"sam-il", hanja:"三日", english:"Three days", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"三",korean:"삼",meaning:"three"},{char:"日",korean:"일",meaning:"day · sun"}],
+    examples:[{korean:"삼일 후에 만나요.",english:"Let's meet in three days."},{korean:"삼일 동안 쉬었어요.",english:"I rested for three days."},{korean:"삼일절이에요.",english:"It's March 1st Independence Movement Day."}],
+    related:["기간","시간","날짜"] },
+
+  // ── 暮 (모) 관련 단어 ──
+  "세모":{ korean:"세모", romanization:"se-mo", hanja:"歲暮", english:"Year-end / End of the year", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"歲",korean:"세",meaning:"year · age"},{char:"暮",korean:"모",meaning:"evening · end"}],
+    examples:[{korean:"세모가 다가왔어요.",english:"Year-end is approaching."},{korean:"세모에 바빠요.",english:"I'm busy at year-end."},{korean:"세모 분위기예요.",english:"It has a year-end atmosphere."}],
+    related:["세대","시간","기간"] },
+
+  "모경":{ korean:"모경", romanization:"mo-gyeong", hanja:"暮景", english:"Evening scenery / Twilight scene", category:"자연 · Nature",
+    hanja_breakdown:[{char:"暮",korean:"모",meaning:"evening · dusk"},{char:"景",korean:"경",meaning:"scenery · view"}],
+    examples:[{korean:"모경이 아름다워요.",english:"The evening scenery is beautiful."},{korean:"강변 모경을 봤어요.",english:"I saw the twilight scene by the river."},{korean:"모경에 물들었어요.",english:"It was bathed in the twilight glow."}],
+    related:["순간","감정"] },
+
+  // ── 四 (사) 관련 단어 ──
+  "사계":{ korean:"사계", romanization:"sa-gye", hanja:"四季", english:"Four seasons", category:"자연 · Nature",
+    hanja_breakdown:[{char:"四",korean:"사",meaning:"four"},{char:"季",korean:"계",meaning:"season"}],
+    examples:[{korean:"한국은 사계가 뚜렷해요.",english:"Korea has four distinct seasons."},{korean:"사계절 모두 좋아요.",english:"I like all four seasons."},{korean:"사계의 변화가 아름다워요.",english:"The change of the four seasons is beautiful."}],
+    related:["문화","시대","시간"] },
+
+  "사방":{ korean:"사방", romanization:"sa-bang", hanja:"四方", english:"All directions / Everywhere", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"四",korean:"사",meaning:"four"},{char:"方",korean:"방",meaning:"direction · side"}],
+    examples:[{korean:"사방이 산으로 둘러싸여 있어요.",english:"It's surrounded by mountains on all sides."},{korean:"사방을 둘러봤어요.",english:"I looked around in all directions."},{korean:"소문이 사방으로 퍼졌어요.",english:"The rumor spread in all directions."}],
+    related:["공간","중간"] },
+
+  "사각":{ korean:"사각", romanization:"sa-gak", hanja:"四角", english:"Square / Four-cornered", category:"일상 · Daily Life",
+    hanja_breakdown:[{char:"四",korean:"사",meaning:"four"},{char:"角",korean:"각",meaning:"corner · angle"}],
+    examples:[{korean:"사각형이에요.",english:"It's a square/rectangle."},{korean:"사각 지대예요.",english:"It's a blind spot."},{korean:"사각 팬티예요.",english:"They're boxer shorts."}],
+    related:["삼각","공간"] },
+
+  // ── 食 (식) 관련 단어 ──
+  "식사":{ korean:"식사", romanization:"sik-sa", hanja:"食事", english:"Meal / Dining", category:"음식 · Food",
+    hanja_breakdown:[{char:"食",korean:"식",meaning:"eat · food"},{char:"事",korean:"사",meaning:"matter · affair"}],
+    examples:[{korean:"식사했어요?",english:"Have you eaten?"},{korean:"같이 식사해요.",english:"Let's eat together."},{korean:"식사가 맛있어요.",english:"The meal is delicious."}],
+    related:["식당","음식","조식"] },
+
+  "식당":{ korean:"식당", romanization:"sik-dang", hanja:"食堂", english:"Restaurant / Cafeteria", category:"음식 · Food",
+    hanja_breakdown:[{char:"食",korean:"식",meaning:"eat · food"},{char:"堂",korean:"당",meaning:"hall · building"}],
+    examples:[{korean:"식당에 가요.",english:"Let's go to the restaurant."},{korean:"식당이 어디예요?",english:"Where is the restaurant?"},{korean:"학교 식당이에요.",english:"It's the school cafeteria."}],
+    related:["식사","음식","급식"] },
+
+  "식품":{ korean:"식품", romanization:"sik-pum", hanja:"食品", english:"Food product / Groceries", category:"음식 · Food",
+    hanja_breakdown:[{char:"食",korean:"식",meaning:"eat · food"},{char:"品",korean:"품",meaning:"product · quality"}],
+    examples:[{korean:"식품을 사러 가요.",english:"I'm going to buy groceries."},{korean:"식품 알레르기가 있어요.",english:"I have a food allergy."},{korean:"유기농 식품이에요.",english:"It's organic food."}],
+    related:["식사","음식","식당"] },
+
+  "음식":{ korean:"음식", romanization:"eum-sik", hanja:"飮食", english:"Food / Cuisine", category:"음식 · Food",
+    hanja_breakdown:[{char:"飮",korean:"음",meaning:"drink · consume"},{char:"食",korean:"식",meaning:"eat · food"}],
+    examples:[{korean:"음식이 맛있어요.",english:"The food is delicious."},{korean:"한국 음식을 좋아해요.",english:"I like Korean food."},{korean:"음식을 남기면 안 돼요.",english:"You shouldn't waste food."}],
+    related:["식사","식당","식품","조식"] },
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let state = loadState();
+let currentIndex = 0;
+let reviewMode = false;
+let reviewQueue = [];
+
+function loadState(){
+  try{ const s=JSON.parse(localStorage.getItem('hanadul_state')||'{}'); return{mastery:s.mastery||{},streak:s.streak||1,lastStudy:s.lastStudy||null}; }
+  catch{ return{mastery:{},streak:1,lastStudy:null}; }
+}
+function saveState(){ localStorage.setItem('hanadul_state',JSON.stringify(state)); }
+
+// ═══════════════════════════════════════════════
+//  PAGE STACK SYSTEM
+// ═══════════════════════════════════════════════
+let pageStack = [];
+
+function pushPage(type, data){
+  const el = document.createElement('div');
+  el.className = 'overlay-page';
+  if(type==='hanja')      el.innerHTML = buildHanjaPage(data);
+  else if(type==='word')  el.innerHTML = buildWordPage(data);
+  else if(type==='idiom') el.innerHTML = buildIdiomPage(data);
+  document.getElementById('overlayStack').appendChild(el);
+  pageStack.push({type, data, el});
+  requestAnimationFrame(()=>{ requestAnimationFrame(()=>el.classList.add('open')); });
+  document.body.style.overflow = 'hidden';
+}
+
+function popPage(){
+  if(!pageStack.length) return;
+  const {el} = pageStack.pop();
+  el.classList.remove('open');
+  setTimeout(()=>el.remove(), 340);
+  if(!pageStack.length) document.body.style.overflow='';
+}
+
+function popToIndex(index){
+  // pop all pages above index
+  while(pageStack.length > index+1){
+    const {el} = pageStack.pop();
+    el.remove();
+  }
+  if(pageStack.length > 0 && pageStack.length === index+1){
+    const {el} = pageStack.pop();
+    el.classList.remove('open');
+    setTimeout(()=>el.remove(), 340);
+  }
+  if(!pageStack.length) document.body.style.overflow='';
+}
+
+function buildBreadcrumb(){
+  const depth = pageStack.length;
+  let html = `<div class="breadcrumb">`;
+  html += `<span class="bc-item" onclick="popToIndex(-1)">🏠 Home</span>`;
+  pageStack.forEach((item,i)=>{
+    const label = item.type==='hanja' ? item.data.char+' '+item.data.korean : item.data.korean;
+    html += `<span class="bc-sep">›</span><span class="bc-item" onclick="popToIndex(${i-1})">${label}</span>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+// ── HANJA PAGE ──
+function buildHanjaPage(data){
+  const filtered = data.words.filter(w=>WORDS[w]);
+  const wordsHTML = filtered.map((wKey,i)=>{
+    const w = WORDS[wKey];
+    const kr = w.korean.includes(data.korean)
+      ? w.korean.replace(data.korean,`<span style="color:var(--hanja)">${data.korean}</span>`)
+      : w.korean;
+    return `<div class="hanja-word-row" style="animation-delay:${i*0.05}s" onclick="pushWordPage('${wKey}')">
+      <div class="hanja-row-left">
+        <div class="hanja-row-char">${data.char}</div>
+        <div><div class="hanja-row-kr">${kr}</div><div class="hanja-row-hanja">${w.hanja||''}</div></div>
+      </div>
+      <div class="hanja-row-right">
+        <div class="hanja-row-en">${w.english}</div>
+        <div class="hanja-row-actions">
+          <button class="tts-mini" onclick="event.stopPropagation();speakText('${w.korean}')">🔊</button>
+          <span class="detail-arrow">→</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Idioms section
+  const idiomKeys = (data.idioms||[]).filter(k=>IDIOMS[k]);
+  const idiomsHTML = idiomKeys.length ? `
+    <div class="hanja-words-label" style="margin-top:20px">🀄 사자성어 with ${data.char} · ${idiomKeys.length} idiom${idiomKeys.length>1?'s':''}</div>
+    ${idiomKeys.map((key,i)=>{
+      const id=IDIOMS[key];
+      return `<div class="idiom-list-item" style="animation-delay:${i*0.05}s" onclick="pushIdiomPage('${key}')">
+        <div>
+          <div class="idiom-list-kr">${id.korean} <span class="idiom-badge">사자성어</span></div>
+          <div class="idiom-list-hanja">${id.hanja}</div>
+        </div>
+        <div class="idiom-list-en">${id.english}</div>
+      </div>`;
+    }).join('')}` : '';
+
+  return `
+    <div class="overlay-header">
+      <button class="back-btn" onclick="popPage()">←</button>
+      <div class="overlay-title">${data.char} · ${data.korean} · ${data.meaning}</div>
+    </div>
+    ${buildBreadcrumb()}
+    <div class="hanja-hero">
+      <div class="hanja-big-char">${data.char}</div>
+      <div class="hanja-big-kr">${data.korean}</div>
+      <div class="hanja-big-en">${data.meaning}</div>
+      <div class="hanja-note">${data.note}</div>
+    </div>
+    <div class="hanja-words-wrap">
+      ${filtered.length ? `<div class="hanja-words-label">⬡ Words using this character · ${filtered.length} words</div>${wordsHTML}` : ''}
+      ${idiomsHTML}
+      ${!filtered.length && !idiomKeys.length ? '<div style="color:var(--muted);font-size:0.85rem;text-align:center;padding:20px">More words coming soon!</div>' : ''}
+    </div>`;
+}
+
+// ── WORD PAGE ──
+function buildWordPage(w){
+  const hanjaHTML = w.hanja_breakdown && w.hanja_breakdown.length ? `
+    <div class="hanja-section">
+      <div class="hanja-label">⬡ Hanja Origin · 한자 어원</div>
+      <div class="hanja-chars">${w.hanja_breakdown.map(h=>`
+        <div class="hanja-char" onclick="pushHanjaPage('${h.char}')">
+          <div class="hanja-glyph">${h.char}</div>
+          <div class="hanja-kr">${h.korean}</div>
+          <div class="hanja-en">${h.meaning}</div>
+          <div class="hanja-tap">tap to explore →</div>
+        </div>`).join('')}
+      </div>
+    </div>` : `<div style="background:rgba(212,136,58,0.06);border:1px solid rgba(212,136,58,0.1);border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:0.8rem;color:var(--muted)">순우리말 — Native Korean word (no Hanja origin)</div>`;
+
+  const examplesHTML = w.examples.map(ex=>`
+    <div class="example-item" onclick="speakText('${ex.korean.replace(/'/g,"\\'")}')">
+      <div class="example-kr">${ex.korean} <span class="example-tts">🔊</span></div>
+      <div class="example-en">${ex.english}</div>
+    </div>`).join('');
+
+  const relatedWords = (w.related||[]).filter(r=>WORDS[r]);
+  const relatedHTML = relatedWords.length ? `
+    <div class="related-section">
+      <div class="related-label">🔗 Related Words · tap to explore</div>
+      <div class="related-chips">${relatedWords.map(r=>`
+        <div class="related-chip" onclick="pushWordPage('${r}')">
+          <span class="chip-kr">${r}</span>
+          <span class="chip-en">${WORDS[r].english}</span>
+        </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  return `
+    <div class="overlay-header">
+      <button class="back-btn" onclick="popPage()">←</button>
+      <div class="overlay-title">${w.korean} · ${w.english}</div>
+    </div>
+    ${buildBreadcrumb()}
+    <div class="word-detail-inner">
+      <div class="word-card" style="animation:cardIn 0.35s ease">
+        <div class="card-glow"></div>
+        <div class="card-category">${w.category}</div>
+        <div class="card-main">
+          <div class="korean-word">${w.korean}</div>
+          <button class="tts-btn" onclick="speakText('${w.korean}')">🔊</button>
+        </div>
+        <div class="romanization">${w.romanization}</div>
+        <div class="english-meaning">${w.english}</div>
+        ${hanjaHTML}
+        <div class="examples-label">💬 Example Sentences</div>
+        ${examplesHTML}
+        ${relatedHTML}
+      </div>
+      <div style="text-align:center;padding:8px;font-size:0.72rem;color:var(--muted)">
+        Tap any Hanja or related word to keep exploring 🔍
+      </div>
+    </div>`;
+}
+
+// ── PUBLIC PUSH HELPERS ──
+function pushHanjaPage(char){
+  const data = HANJA_DB[char];
+  if(!data){ showToast('Coming soon!'); return; }
+  const filtered = {...data, words: data.words.filter(w=>WORDS[w])};
+  if(!filtered.words.length){ showToast('No words yet!'); return; }
+  pushPage('hanja', filtered);
+}
+
+function pushWordPage(korean){
+  const w = WORDS[korean];
+  if(!w){ showToast('Coming soon!'); return; }
+  pushPage('word', w);
+}
+
+// ═══════════════════════════════════════════════
+//  MAIN STUDY CARD
+// ═══════════════════════════════════════════════
+function getActiveList(){ return reviewMode ? reviewQueue : STUDY_LIST; }
+
+function renderWord(index){
+  const list = getActiveList();
+  if(!list.length){ showComplete(); return; }
+  const key = list[index];
+  const w = WORDS[key];
+  if(!w) return;
+
+  document.getElementById('koreanWord').textContent = w.korean;
+  document.getElementById('romanization').textContent = w.romanization;
+  document.getElementById('englishMeaning').textContent = w.english;
+  document.getElementById('cardCategory').textContent = w.category;
+
+  document.getElementById('hanjaChars').innerHTML = w.hanja_breakdown.length
+    ? w.hanja_breakdown.map(h=>`
+        <div class="hanja-char" onclick="pushHanjaPage('${h.char}')">
+          <div class="hanja-glyph">${h.char}</div>
+          <div class="hanja-kr">${h.korean}</div>
+          <div class="hanja-en">${h.meaning}</div>
+          <div class="hanja-tap">tap to explore →</div>
+        </div>`).join('')
+    : `<div style="font-size:0.8rem;color:var(--muted);padding:4px 0">순우리말 — Native Korean (no Hanja)</div>`;
+
+  document.getElementById('examplesWrap').innerHTML = w.examples.map(ex=>`
+    <div class="example-item" onclick="speakText('${ex.korean.replace(/'/g,"\\'")}')">
+      <div class="example-kr">${ex.korean} <span class="example-tts">🔊</span></div>
+      <div class="example-en">${ex.english}</div>
+    </div>`).join('');
+
+  const related = (w.related||[]).filter(r=>WORDS[r]);
+  document.getElementById('relatedChips').innerHTML = related.map(r=>`
+    <div class="related-chip" onclick="pushWordPage('${r}')">
+      <span class="chip-kr">${r}</span>
+      <span class="chip-en">${WORDS[r].english}</span>
+    </div>`).join('');
+
+  document.getElementById('wordCounter').textContent = `${index+1} / ${list.length}`;
+  document.getElementById('btnPrev').disabled = index===0;
+  document.getElementById('btnNext').disabled = index===list.length-1;
+
+  const studied = Object.keys(state.mastery).length;
+  const pct = STUDY_LIST.length ? Math.round(studied/STUDY_LIST.length*100) : 0;
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressCount').textContent = `${studied} / ${STUDY_LIST.length}`;
+
+  const card = document.getElementById('wordCard');
+  card.style.animation='none'; card.offsetHeight;
+  card.style.animation='cardIn 0.35s cubic-bezier(0.4,0,0.2,1)';
+}
+
+function prevWord(){ if(currentIndex>0){currentIndex--;renderWord(currentIndex);} }
+function nextWord(){ const l=getActiveList(); if(currentIndex<l.length-1){currentIndex++;renderWord(currentIndex);} }
+
+function markWord(known){
+  const key = getActiveList()[currentIndex];
+  state.mastery[key] = known?'known':'learning';
+  state.lastStudy = new Date().toDateString();
+  saveState();
+  if(!known && !reviewQueue.includes(key)) reviewQueue.push(key);
+  showToast(known?'✓ Got it!':'✗ Added to review');
+  updateReviewBanner(); updateStats();
+  const l = getActiveList();
+  if(currentIndex<l.length-1){currentIndex++;renderWord(currentIndex);}
+  else showComplete();
+}
+
+function showComplete(){
+  document.getElementById('studyCardWrap').style.display='none';
+  document.getElementById('completeScreen').classList.add('active');
+  const rq = STUDY_LIST.filter(k=>state.mastery[k]==='learning');
+  document.getElementById('completeSubtext').textContent = rq.length
+    ? `You have ${rq.length} word(s) to review. Keep going!`
+    : 'All words mastered! 대단해요! 🌟';
+}
+
+function restartSession(){
+  reviewMode=false; currentIndex=0;
+  document.getElementById('studyCardWrap').style.display='block';
+  document.getElementById('completeScreen').classList.remove('active');
+  renderWord(0);
+}
+
+function startReview(){
+  reviewQueue = STUDY_LIST.filter(k=>state.mastery[k]==='learning');
+  if(!reviewQueue.length){showToast('No words to review!');return;}
+  reviewMode=true; currentIndex=0;
+  document.getElementById('studyCardWrap').style.display='block';
+  document.getElementById('completeScreen').classList.remove('active');
+  renderWord(0);
+  showToast(`Reviewing ${reviewQueue.length} word(s)`);
+}
+
+// ═══════════════════════════════════════════════
+//  TTS
+// ═══════════════════════════════════════════════
+function speakWord(){ speakText(WORDS[getActiveList()[currentIndex]].korean); }
+function speakText(text){
+  if(!window.speechSynthesis){showToast('TTS not supported');return;}
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang='ko-KR'; u.rate=0.85;
+  window.speechSynthesis.speak(u);
+}
+
+// ═══════════════════════════════════════════════
+//  WORD LIST + SEARCH
+// ═══════════════════════════════════════════════
+function renderWordList(filter=''){
+  const q = filter.trim().toLowerCase();
+
+  // Search across ALL words in DB, not just STUDY_LIST
+  const allKeys = Object.keys(WORDS);
+  const matched = q
+    ? allKeys.filter(key=>{
+        const w = WORDS[key];
+        return w.korean.includes(q) || w.english.toLowerCase().includes(q);
+      })
+    : STUDY_LIST;
+
+  const count = document.getElementById('searchCount');
+  const title = document.getElementById('wordsTitle');
+
+  if(q){
+    count.textContent = `${matched.length} result${matched.length!==1?'s':''} for "${filter.trim()}"`;
+    title.style.display = 'none';
+  } else {
+    count.textContent = '';
+    title.style.display = 'block';
+  }
+
+  if(!matched.length){
+    document.getElementById('wordListContainer').innerHTML = `
+      <div class="search-empty">
+        <div class="search-empty-icon">🔍</div>
+        <div>No words found for <strong>"${filter.trim()}"</strong></div>
+        <div style="font-size:0.8rem;margin-top:8px;color:var(--soft)">Try searching in Korean or English</div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('wordListContainer').innerHTML = matched.map(key=>{
+    const w=WORDS[key]; const m=state.mastery[key]||'new';
+    const dot=m==='known'?'mastery-known':m==='learning'?'mastery-learning':'mastery-new';
+
+    // highlight matched text
+    const krDisplay = q && w.korean.includes(q)
+      ? w.korean.replace(new RegExp(`(${q})`,'gi'),'<span style="color:var(--accent);font-weight:900">$1</span>')
+      : w.korean;
+    const enDisplay = q && w.english.toLowerCase().includes(q)
+      ? w.english.replace(new RegExp(`(${q})`,'gi'),'<span style="color:var(--accent)">$1</span>')
+      : w.english;
+
+    return `<div class="word-list-item" onclick="pushWordPage('${key}')">
+      <div><div class="word-list-kr">${krDisplay}</div><div class="word-list-hanja">${w.hanja||'순우리말'}</div></div>
+      <div class="word-list-right"><div class="word-list-en">${enDisplay}</div><div class="mastery-dot ${dot}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function onSearch(val){
+  document.getElementById('searchClear').style.display = val ? 'block' : 'none';
+  renderWordList(val);
+}
+
+function clearSearch(){
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').style.display = 'none';
+  renderWordList('');
+  document.getElementById('searchInput').focus();
+}
+
+
+
+// ═══════════════════════════════════════════════
+//  STATS
+// ═══════════════════════════════════════════════
+function updateStats(){
+  const total=STUDY_LIST.length;
+  const known=STUDY_LIST.filter(k=>state.mastery[k]==='known').length;
+  const learning=STUDY_LIST.filter(k=>state.mastery[k]==='learning').length;
+  const newW=total-known-learning;
+  document.getElementById('statTotal').textContent=total;
+  document.getElementById('statKnown').textContent=known;
+  document.getElementById('statReview').textContent=learning;
+  document.getElementById('statStreak').textContent=state.streak;
+  document.getElementById('streakCount').textContent=state.streak;
+  const pct=n=>total?Math.round(n/total*100)+'%':'0%';
+  document.getElementById('barNew').style.width=pct(newW);
+  document.getElementById('barLearning').style.width=pct(learning);
+  document.getElementById('barKnown').style.width=pct(known);
+}
+
+function updateReviewBanner(){
+  const rq=STUDY_LIST.filter(k=>state.mastery[k]==='learning');
+  document.getElementById('reviewBanner').style.display=rq.length?'flex':'none';
+  document.getElementById('reviewCount').textContent=rq.length;
+}
+
+// ═══════════════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════════════
+function showPage(name, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(name==='words') renderWordList();
+  if(name==='stats') updateStats();
+  if(name==='idioms') renderIdiomList();
+}
+
+// ═══════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+// ═══════════════════════════════════════════════
+//  IDIOM FUNCTIONS
+// ═══════════════════════════════════════════════
+
+// Add idioms to HANJA_DB
+function registerIdiomHanja(){
+  Object.values(IDIOMS).forEach(idiom => {
+    idiom.chars.forEach(c => {
+      if(!HANJA_DB[c.char]){
+        HANJA_DB[c.char] = { char:c.char, korean:c.korean, meaning:c.meaning, note:`Used in ${idiom.korean} and other words`, words:[], idioms:[] };
+      }
+      if(!HANJA_DB[c.char].idioms) HANJA_DB[c.char].idioms = [];
+      if(!HANJA_DB[c.char].idioms.includes(idiom.korean)) HANJA_DB[c.char].idioms.push(idiom.korean);
+    });
+  });
+}
+registerIdiomHanja();
+
+// ── BUILD IDIOM CARD PAGE ──
+function buildIdiomPage(idiom){
+  const charsHTML = idiom.chars.map(c=>`
+    <div class="idiom-char-block" onclick="pushHanjaPage('${c.char}')">
+      <div class="idiom-char-glyph">${c.char}</div>
+      <div class="idiom-char-kr">${c.korean}</div>
+      <div class="idiom-char-en">${c.meaning}</div>
+      <div class="idiom-char-tap">tap →</div>
+    </div>`).join('');
+
+  const examplesHTML = idiom.examples.map(ex=>`
+    <div class="example-item" onclick="speakText('${ex.korean.replace(/'/g,"\\'")}')">
+      <div class="example-kr">${ex.korean} <span class="example-tts">🔊</span></div>
+      <div class="example-en">${ex.english}</div>
+    </div>`).join('');
+
+  const relatedWordsHTML = idiom.related_words.filter(r=>WORDS[r]).map(r=>`
+    <div class="related-chip" onclick="pushWordPage('${r}')">
+      <span class="chip-kr">${r}</span>
+      <span class="chip-en">${WORDS[r].english}</span>
+    </div>`).join('');
+
+  const relatedIdiomsHTML = (idiom.related_idioms||[]).filter(r=>IDIOMS[r]).map(r=>`
+    <div class="related-chip" onclick="pushIdiomPage('${r}')">
+      <span class="chip-kr">${r}</span>
+      <span class="chip-en">${IDIOMS[r].english}</span>
+    </div>`).join('');
+
+  return `
+    <div class="overlay-header">
+      <button class="back-btn" onclick="popPage()">←</button>
+      <div class="overlay-title">${idiom.korean} · ${idiom.hanja}</div>
+    </div>
+    ${buildBreadcrumb()}
+    <div class="word-detail-inner">
+      <div class="idiom-card">
+        <div class="card-glow"></div>
+        <div class="card-category">${idiom.situation}</div>
+        <div class="card-main">
+          <div class="idiom-title">${idiom.korean}</div>
+          <button class="tts-btn" onclick="speakText('${idiom.korean}')">🔊</button>
+        </div>
+        <div class="idiom-hanja">${idiom.hanja}</div>
+        <div class="idiom-roman">${idiom.romanization}</div>
+
+        <div class="idiom-meaning-box">
+          <div class="idiom-literal">✦ Literal meaning</div>
+          <div class="idiom-literal-text">"${idiom.literal}"</div>
+          <div class="idiom-english">${idiom.english}</div>
+        </div>
+
+        <div class="idiom-chars">${charsHTML}</div>
+
+        <div class="idiom-origin-box">
+          <div class="idiom-origin-label">📜 Origin Story</div>
+          <div class="idiom-origin-text">${idiom.origin}</div>
+        </div>
+
+        <div class="examples-label">💬 Example Sentences</div>
+        ${examplesHTML}
+
+        ${relatedWordsHTML||relatedIdiomsHTML ? `
+        <div class="related-section">
+          <div class="related-label">🔗 Related · tap to explore</div>
+          <div class="related-chips">${relatedWordsHTML}${relatedIdiomsHTML}</div>
+        </div>` : ''}
+      </div>
+      <div style="text-align:center;padding:8px;font-size:0.72rem;color:var(--muted)">
+        Tap any Hanja character to explore all words that use it 🔍
+      </div>
+    </div>`;
+}
+
+// ── LINKIFY: auto-detect known words in a Korean sentence ──
+function linkifyKorean(sentence){
+  // Sort by length (longest first) to avoid partial matches
+  const allWords = [...Object.keys(WORDS), ...Object.keys(IDIOMS)]
+    .sort((a,b)=>b.length-a.length);
+  let result = sentence;
+  const placeholders = {};
+  let pi = 0;
+  allWords.forEach(w=>{
+    if(result.includes(w)){
+      const ph = `\x00${pi}\x00`;
+      const type = WORDS[w] ? 'pushWordPage' : 'pushIdiomPage';
+      placeholders[ph] = `<span class="word-link" onclick="event.stopPropagation();${type}('${w}')">${w}</span>`;
+      result = result.split(w).join(ph);
+      pi++;
+    }
+  });
+  Object.keys(placeholders).forEach(ph=>{ result = result.split(ph).join(placeholders[ph]); });
+  return result;
+}
+
+
+
+function pushIdiomPage(korean){
+  const idiom = IDIOMS[korean];
+  if(!idiom){ showToast('Coming soon!'); return; }
+  pushPage('idiom', idiom);
+}
+
+
+// ── IDIOM LIST PAGE ──
+function renderIdiomList(filter=''){
+  const q = filter.trim().toLowerCase();
+  const allKeys = Object.keys(IDIOMS);
+  const matched = q
+    ? allKeys.filter(k=>{
+        const id=IDIOMS[k];
+        return id.korean.includes(q) || id.english.toLowerCase().includes(q) || id.hanja.includes(q);
+      })
+    : allKeys;
+
+  const count = document.getElementById('idiomSearchCount');
+  const title = document.getElementById('idiomsTitle');
+  if(q){ count.textContent=`${matched.length} result${matched.length!==1?'s':''} for "${filter.trim()}"`;title.style.display='none'; }
+  else { count.textContent=''; title.style.display='block'; }
+
+  if(!matched.length){
+    document.getElementById('idiomListContainer').innerHTML=`
+      <div class="search-empty"><div class="search-empty-icon">🔍</div>
+      <div>No idioms found for <strong>"${filter.trim()}"</strong></div></div>`;
+    return;
+  }
+  document.getElementById('idiomListContainer').innerHTML = matched.map(key=>{
+    const id=IDIOMS[key];
+    return `<div class="idiom-list-item" onclick="pushIdiomPage('${key}')">
+      <div>
+        <div class="idiom-list-kr">${id.korean} <span class="idiom-badge">사자성어</span></div>
+        <div class="idiom-list-hanja">${id.hanja}</div>
+      </div>
+      <div class="idiom-list-en">${id.english}</div>
+    </div>`;
+  }).join('');
+}
+
+function onIdiomSearch(val){
+  document.getElementById('idiomSearchClear').style.display=val?'block':'none';
+  renderIdiomList(val);
+}
+function clearIdiomSearch(){
+  document.getElementById('idiomSearchInput').value='';
+  document.getElementById('idiomSearchClear').style.display='none';
+  renderIdiomList('');
+  document.getElementById('idiomSearchInput').focus();
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+renderWord(0);
+updateStats();
+updateReviewBanner();
+</script>
+</body>
+</html>
